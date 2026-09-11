@@ -1,0 +1,28 @@
+# ============================================================
+# NEXUS — .gitignore
+# ============================================================
+
+# Configuration locale (contient les credentials DB)
+config/config.php
+
+# Cache des taux de change (généré automatiquement)
+/tmp/nexus_rates.json
+
+# Dossiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# Logs PHP
+*.log
+
+# Dépendances (si ajoutées plus tard)
+/vendor/
+node_modules/
+
+# Fins de ligne (géré par .gitattributes)

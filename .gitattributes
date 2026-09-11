@@ -1,0 +1,17 @@
+# Normalisation des fins de ligne
+* text=auto
+
+# PHP, SQL, JS, CSS — LF dans le dépôt
+*.php  text eol=lf
+*.sql  text eol=lf
+*.js   text eol=lf
+*.css  text eol=lf
+*.json text eol=lf
+*.md   text eol=lf
+*.html text eol=lf
+
+# Binaires — pas de conversion
+*.png  binary
+*.jpg  binary
+*.ico  binary
+*.min.js binary
