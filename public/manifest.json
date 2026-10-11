@@ -2,7 +2,7 @@
   "name": "NEXUS — Personal OS",
   "short_name": "NEXUS",
   "description": "Votre centre de contrôle personnel",
-  "start_url": "/nexus/public/index.php?page=dashboard",
+  "start_url": "./index.php?page=dashboard",
   "display": "standalone",
   "background_color": "#04060c",
   "theme_color": "#00d9ff",

@@ -3,10 +3,11 @@
  * Cache les assets statiques pour un accès hors ligne partiel.
  */
 const CACHE_NAME  = 'nexus-v1';
+const APP_BASE = new URL('.', self.location).pathname;
 const CACHE_ASSETS = [
-    '/nexus/public/assets/css/style.css',
-    '/nexus/public/assets/js/app.js',
-    '/nexus/public/assets/js/chart.umd.min.js',
+    `${APP_BASE}assets/css/style.css`,
+    `${APP_BASE}assets/js/app.js`,
+    `${APP_BASE}assets/js/chart.umd.min.js`,
 ];
 
 // Installation : mise en cache des assets statiques
