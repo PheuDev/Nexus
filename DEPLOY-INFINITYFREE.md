@@ -21,9 +21,9 @@ NEXUS utilise PHP et MySQL/MariaDB. Ce guide vise une installation personnelle d
 ## 3. Envoyer les fichiers
 
 1. Connecte-toi au FTP depuis le panneau InfinityFree.
-2. Envoie le projet dans `htdocs`, en conservant sa structure : `config/`, `controllers/`, `core/`, `database/`, `lang/`, `models/`, `public/` et `views/`.
+2. Envoie le projet dans `htdocs`, en conservant sa structure : `index.php`, `config/`, `controllers/`, `core/`, `database/`, `lang/`, `models/`, `public/` et `views/`.
 3. N'envoie pas le dossier `.git` ni `config/config.php` avant de l'avoir rempli avec les identifiants de ta base.
-4. Le `.htaccess` à la racine sert `public/index.php` à la racine du domaine et bloque l'accès HTTP aux sources et à la configuration.
+4. `index.php` à la racine relaie vers `public/index.php`; le `.htaccess` expose les assets et bloque l'accès HTTP aux sources et à la configuration.
 
 Le fichier de configuration doit exister sur l'hébergement avant la première visite du site.
 
