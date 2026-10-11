@@ -1,11 +1,9 @@
 <?php
 /**
- * ============================================================
- * CONTROLLER — Analyse financière
+ *CONTROLLER — Analyse financière
  * Évolution, répartition des dépenses, taux d'épargne,
  * comparaison de périodes, observations automatiques.
- * ============================================================
- */
+*/
 
 require_once __DIR__ . '/../models/Transaction.php';
 
