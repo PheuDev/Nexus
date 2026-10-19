@@ -19,14 +19,14 @@
         <p>Ces données servent au fonctionnement de votre espace. Elles restent associées à votre compte jusqu’à sa suppression. La suppression du compte efface également les données liées dans la base.</p>
 
         <h2>Hébergement et services tiers</h2>
-        <p>L’application et sa base de données sont hébergées par Render. Lorsque vous changez de devise, NEXUS peut demander les taux de change à <a href="https://open.er-api.com/" rel="noopener noreferrer">open.er-api.com</a> ; cette requête ne contient pas vos données financières.</p>
+        <p>L’application est hébergée par Render et la base PostgreSQL par Neon. Lorsque vous changez de devise, NEXUS peut demander les taux de change à <a href="https://open.er-api.com/" rel="noopener noreferrer">open.er-api.com</a> ; cette requête ne contient pas vos données financières.</p>
 
         <h2>Cookies</h2>
         <p>Un cookie de session est utilisé pour maintenir votre connexion et protéger les formulaires. NEXUS n’utilise pas de cookies publicitaires ni de mesure d’audience.</p>
 
         <h2>Vos choix</h2>
         <p>Vous pouvez supprimer votre compte depuis les paramètres. Pour signaler un problème, utilisez les <a href="https://github.com/PheuDev/Nexus/issues" rel="noopener noreferrer">issues du projet sur GitHub</a> ; n’y publiez aucune information personnelle ou financière.</p>
-        <p class="privacy-note">NEXUS est un projet personnel, pas un établissement financier. L’offre gratuite de Render est prévue pour les essais et sa base peut expirer ; n’y stockez pas de données financières réelles tant que l’hébergement n’a pas été pérennisé.</p>
+        <p class="privacy-note">NEXUS est un projet personnel, pas un établissement financier. Les offres gratuites de Render et Neon ont des limites de disponibilité et de capacité ; elles conviennent aux essais, pas au stockage de données financières importantes.</p>
     </article>
 </main>
 </body>

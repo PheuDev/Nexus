@@ -76,9 +76,9 @@ Ouvrir : `http://localhost:8000/`
 
 ## Déploiement sur Render
 
-Le dépôt contient un `Dockerfile` et un `render.yaml`. Après avoir poussé la branche `main` sur GitHub, créez un Blueprint Render depuis ce dépôt. Le Blueprint configure le service PHP et PostgreSQL dans la région de Francfort. Le schéma est appliqué au démarrage.
+Le dépôt contient un `Dockerfile` et un `render.yaml`. Créez d'abord un projet PostgreSQL gratuit chez [Neon](https://neon.tech/), puis copiez sa chaîne de connexion. Dans Render, créez un Blueprint depuis ce dépôt et fournissez cette valeur à `DATABASE_URL` quand Render la demande. Pour un service déjà créé, ajoutez `DATABASE_URL` dans **Environment**. Le schéma est appliqué au démarrage.
 
-Les deux ressources sont réglées sur l'offre gratuite pour les essais. Render supprime les bases PostgreSQL gratuites après 30 jours ; passez la base à une offre payante et configurez une sauvegarde avant d'y saisir de vraies données financières.
+L'offre gratuite de Neon comporte des plafonds de calcul, stockage et transfert ; consultez [les limites en vigueur](https://neon.com/docs/introduction/plans) avant d'y conserver des données importantes. L'offre gratuite Render peut mettre le site en veille après inactivité. Cette configuration convient aux essais, sans garantie de disponibilité continue.
 
 ---
 
