@@ -7,6 +7,7 @@ require_once __DIR__ . '/../models/Transaction.php';
 require_once __DIR__ . '/../models/Goal.php';
 require_once __DIR__ . '/../models/Task.php';
 require_once __DIR__ . '/../models/Budget.php';
+require_once __DIR__ . '/../models/MonthlyTarget.php';
 
 class DashboardController
 {
@@ -23,6 +24,9 @@ class DashboardController
         $expense     = $totals['expense'];
         $balance     = $income - $expense;
         $savingsRate = $income > 0 ? round((($income - $expense) / $income) * 100, 1) : 0;
+        $monthlyTarget = MonthlyTarget::forMonth($userId, date('Y-m'));
+        $monthlyProgress = $monthlyTarget > 0 ? min(100, max(0, round(($balance / $monthlyTarget) * 100))) : 0;
+        $expenseRanking = Transaction::expenseRanking($userId, $firstOfMonth, $today);
 
         $goals        = Goal::allForUser($userId);
         $activeGoals  = array_filter($goals, fn($g) => $g['status'] === 'active');
@@ -45,7 +49,7 @@ class DashboardController
         $insights = $this->buildInsights($income, $expense, $savingsRate, $activeGoals, $forecast, $budgetSummary);
 
         render('dashboard', [
-            'title'         => 'Control Center',
+            'title'         => t('dashboard.title'),
             'income'        => $income,
             'expense'       => $expense,
             'balance'       => $balance,
@@ -61,7 +65,22 @@ class DashboardController
             'forecast'      => $forecast,
             'score'         => $score,
             'budgetSummary' => $budgetSummary,
+            'monthlyTarget' => $monthlyTarget,
+            'monthlyProgress' => $monthlyProgress,
+            'expenseRanking' => $expenseRanking,
         ]);
+    }
+
+    public function saveMonthlyTarget(): void
+    {
+        require_login();
+        csrf_require();
+        $amount = clean_float($_POST['target_amount'] ?? json_body()['target_amount'] ?? 0);
+        if ($amount < 0 || $amount > 999999999) {
+            json_response(['success' => false, 'error' => 'Montant invalide.'], 422);
+        }
+        MonthlyTarget::save(current_user_id(), date('Y-m'), $amount);
+        json_response(['success' => true]);
     }
 
     public function series(): void

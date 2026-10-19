@@ -23,7 +23,7 @@ class SearchController
         // Transactions
         $stmt = db()->prepare("SELECT id, label AS title, type, amount, occurred_on AS date
             FROM transactions
-            WHERE user_id = ? AND label LIKE ?
+            WHERE user_id = ? AND label ILIKE ?
             ORDER BY occurred_on DESC LIMIT 5");
         $stmt->execute([$userId, '%' . $q . '%']);
         foreach ($stmt->fetchAll() as $r) {
@@ -40,7 +40,7 @@ class SearchController
 
         // Objectifs
         $stmt = db()->prepare("SELECT id, title, current_amount, target_amount
-            FROM goals WHERE user_id = ? AND title LIKE ? LIMIT 5");
+            FROM goals WHERE user_id = ? AND title ILIKE ? LIMIT 5");
         $stmt->execute([$userId, '%' . $q . '%']);
         foreach ($stmt->fetchAll() as $r) {
             $pct = $r['target_amount'] > 0 ? round(($r['current_amount'] / $r['target_amount']) * 100) : 0;
@@ -57,7 +57,7 @@ class SearchController
 
         // Tâches
         $stmt = db()->prepare("SELECT id, title, priority, status, due_date
-            FROM tasks WHERE user_id = ? AND title LIKE ? LIMIT 5");
+            FROM tasks WHERE user_id = ? AND title ILIKE ? LIMIT 5");
         $stmt->execute([$userId, '%' . $q . '%']);
         foreach ($stmt->fetchAll() as $r) {
             $results[] = [

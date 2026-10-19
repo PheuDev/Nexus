@@ -18,7 +18,7 @@ class Task
             $params[] = $filters['priority'];
         }
 
-        $sql .= ' ORDER BY status ASC, due_date IS NULL, due_date ASC, FIELD(priority,"high","medium","low")';
+        $sql .= " ORDER BY status ASC, due_date ASC NULLS LAST, CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END";
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -26,8 +26,8 @@ class Task
 
     public static function todayForUser(int $userId): array
     {
-        $stmt = db()->prepare('SELECT * FROM tasks WHERE user_id = ? AND (due_date = CURDATE() OR due_date < CURDATE()) AND status = "pending"
-                                ORDER BY due_date ASC');
+        $stmt = db()->prepare("SELECT * FROM tasks WHERE user_id = ? AND due_date <= CURRENT_DATE AND status = 'pending'
+                                ORDER BY due_date ASC");
         $stmt->execute([$userId]);
         return $stmt->fetchAll();
     }
@@ -35,7 +35,7 @@ class Task
     /** Nombre total de tâches en attente (toutes dates confondues). */
     public static function countPending(int $userId): int
     {
-        $stmt = db()->prepare('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status = "pending"');
+        $stmt = db()->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status = 'pending'");
         $stmt->execute([$userId]);
         return (int)$stmt->fetchColumn();
     }
@@ -50,9 +50,9 @@ class Task
 
     public static function create(int $userId, string $title, ?string $dueDate, string $priority): int
     {
-        $stmt = db()->prepare('INSERT INTO tasks (user_id, title, due_date, priority) VALUES (?, ?, ?, ?)');
+        $stmt = db()->prepare('INSERT INTO tasks (user_id, title, due_date, priority) VALUES (?, ?, ?, ?) RETURNING id');
         $stmt->execute([$userId, $title, $dueDate ?: null, $priority]);
-        return (int)db()->lastInsertId();
+        return (int)$stmt->fetchColumn();
     }
 
     public static function update(int $id, int $userId, string $title, ?string $dueDate, string $priority): bool

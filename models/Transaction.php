@@ -22,9 +22,9 @@ class Category
 
     public static function create(int $userId, string $name, string $type, string $color): int
     {
-        $stmt = db()->prepare('INSERT INTO categories (user_id, name, type, color) VALUES (?, ?, ?, ?)');
+        $stmt = db()->prepare('INSERT INTO categories (user_id, name, type, color) VALUES (?, ?, ?, ?) RETURNING id');
         $stmt->execute([$userId, $name, $type, $color]);
-        return (int)db()->lastInsertId();
+        return (int)$stmt->fetchColumn();
     }
 
     public static function update(int $id, int $userId, string $name, string $type, string $color): bool
@@ -65,7 +65,7 @@ class Transaction
             $params[] = $filters['category_id'];
         }
         if (!empty($filters['search'])) {
-            $sql .= ' AND t.label LIKE ?';
+            $sql .= ' AND t.label ILIKE ?';
             $params[] = '%' . $filters['search'] . '%';
         }
         if (!empty($filters['from'])) {
@@ -99,7 +99,7 @@ class Transaction
             $params[] = $filters['category_id'];
         }
         if (!empty($filters['search'])) {
-            $sql .= ' AND t.label LIKE ?';
+            $sql .= ' AND t.label ILIKE ?';
             $params[] = '%' . $filters['search'] . '%';
         }
         if (!empty($filters['from'])) {
@@ -135,7 +135,7 @@ class Transaction
     public static function create(int $userId, array $data): int
     {
         $stmt = db()->prepare('INSERT INTO transactions (user_id, category_id, type, amount, label, occurred_on, recurrence, recurrence_end, note)
-                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id');
         $stmt->execute([
             $userId,
             $data['category_id'] ?: null,
@@ -147,7 +147,7 @@ class Transaction
             $data['recurrence_end'] ?: null,
             $data['note']           ?? null,
         ]);
-        return (int)db()->lastInsertId();
+        return (int)$stmt->fetchColumn();
     }
 
     public static function update(int $id, int $userId, array $data): bool
@@ -189,9 +189,9 @@ class Transaction
 
     public static function monthlySeries(int $userId, int $months = 6): array
     {
-        $stmt = db()->prepare("SELECT DATE_FORMAT(occurred_on, '%Y-%m') AS ym, type, SUM(amount) AS total
+        $stmt = db()->prepare("SELECT TO_CHAR(occurred_on, 'YYYY-MM') AS ym, type, SUM(amount) AS total
                                 FROM transactions
-                                WHERE user_id = ? AND occurred_on >= DATE_SUB(CURDATE(), INTERVAL ? MONTH)
+                                WHERE user_id = ? AND occurred_on >= CURRENT_DATE - (? * INTERVAL '1 month')
                                 GROUP BY ym, type ORDER BY ym ASC");
         $stmt->execute([$userId, $months]);
         return $stmt->fetchAll();
@@ -208,6 +208,20 @@ class Transaction
         return $stmt->fetchAll();
     }
 
+    public static function expenseRanking(int $userId, string $from, string $to): array
+    {
+        $stmt = db()->prepare("SELECT COALESCE(c.name, 'Sans catégorie') AS name,
+                                      COALESCE(c.color, '#ff8a3d') AS color,
+                                      SUM(t.amount) AS total
+                               FROM transactions t
+                               LEFT JOIN categories c ON c.id = t.category_id AND c.user_id = t.user_id
+                               WHERE t.user_id = ? AND t.type = 'expense' AND t.occurred_on BETWEEN ? AND ?
+                               GROUP BY c.id, c.name, c.color
+                               ORDER BY total DESC LIMIT 5");
+        $stmt->execute([$userId, $from, $to]);
+        return $stmt->fetchAll();
+    }
+
     /**
      * Prévisions du mois prochain basées sur la moyenne des N derniers mois.
      * Retourne ['income' => float, 'expense' => float]
@@ -216,10 +230,10 @@ class Transaction
     {
         $stmt = db()->prepare("SELECT type, COALESCE(AVG(monthly_total), 0) AS avg_total
             FROM (
-                SELECT DATE_FORMAT(occurred_on, '%Y-%m') AS ym, type, SUM(amount) AS monthly_total
+                SELECT TO_CHAR(occurred_on, 'YYYY-MM') AS ym, type, SUM(amount) AS monthly_total
                 FROM transactions
-                WHERE user_id = ? AND occurred_on >= DATE_SUB(DATE_FORMAT(CURDATE(), '%Y-%m-01'), INTERVAL ? MONTH)
-                  AND occurred_on < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+                WHERE user_id = ? AND occurred_on >= DATE_TRUNC('month', CURRENT_DATE) - (? * INTERVAL '1 month')
+                  AND occurred_on < DATE_TRUNC('month', CURRENT_DATE)
                 GROUP BY ym, type
             ) sub
             GROUP BY type");

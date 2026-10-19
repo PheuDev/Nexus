@@ -5,19 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?= htmlspecialchars(csrf_token()) ?>">
     <title>NEXUS — <?= htmlspecialchars($title) ?></title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
     <link rel="stylesheet" href="assets/css/style.css">
     <style>
-        .auth-particles{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-        .particle{position:absolute;border-radius:50%;animation:particleFloat linear infinite;opacity:0}
-        @keyframes particleFloat{0%{opacity:0;transform:translateY(100vh) scale(0)}10%{opacity:.5}90%{opacity:.2}100%{opacity:0;transform:translateY(-10vh) scale(1)}}
-        .auth-scanline{position:fixed;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(0,217,255,.3),transparent);animation:scanDown 6s ease-in-out infinite;z-index:0;pointer-events:none}
-        @keyframes scanDown{0%{top:-2px;opacity:0}5%{opacity:1}95%{opacity:.3}100%{top:100vh;opacity:0}}
-        .auth-corner-glow{position:fixed;width:400px;height:400px;border-radius:50%;pointer-events:none;z-index:0}
-        .auth-corner-glow.tl{top:-150px;left:-150px;background:radial-gradient(circle,rgba(0,80,200,.1) 0%,transparent 65%)}
-        .auth-corner-glow.br{bottom:-150px;right:-150px;background:radial-gradient(circle,rgba(139,92,246,.08) 0%,transparent 65%)}
         .auth-card{animation:authCardIn .6s cubic-bezier(.34,1.2,.64,1)}
         @keyframes authCardIn{from{opacity:0;transform:translateY(30px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
         #reset-submit{width:100%;margin-top:6px}
@@ -28,11 +19,6 @@
     </style>
 </head>
 <body>
-<div class="auth-corner-glow tl" aria-hidden="true"></div>
-<div class="auth-corner-glow br" aria-hidden="true"></div>
-<div class="auth-scanline"       aria-hidden="true"></div>
-<div class="auth-particles"      id="auth-particles" aria-hidden="true"></div>
-
 <div class="auth-wrapper">
     <div class="auth-card" role="main">
         <div class="auth-logo">
@@ -96,10 +82,6 @@
 <?php if (!$invalid): ?>
 <script>
 const _authT={short:'<?= th('auth.strength_short') ?>',weak:'<?= th('auth.strength_weak') ?>',medium:'<?= th('auth.strength_medium') ?>',strong:'<?= th('auth.strength_strong') ?>',very:'<?= th('auth.strength_very') ?>'};
-(function(){
-    const c=document.getElementById('auth-particles'),colors=['rgba(0,217,255,','rgba(61,125,255,','rgba(139,92,246,'];
-    for(let i=0;i<14;i++){const p=document.createElement('div');p.className='particle';const s=Math.random()*3+1,col=colors[i%3];p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;background:${col}${(Math.random()*.5+.2).toFixed(2)});animation-duration:${Math.random()*12+8}s;animation-delay:${Math.random()*10}s`;c.appendChild(p);}
-})();
 document.getElementById('toggle-pw').addEventListener('click',function(){
     const inp=document.getElementById('new-password'),icon=document.getElementById('eye-icon'),h=inp.type==='password';
     inp.type=h?'text':'password';

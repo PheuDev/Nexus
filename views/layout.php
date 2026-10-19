@@ -44,9 +44,11 @@ $locale      = nexus_locale();
     <meta name="user-currency" content="<?= htmlspecialchars($_SESSION['user_currency'] ?? 'EUR') ?>">
     <title>NEXUS — <?= htmlspecialchars($title ?? $pageLabel) ?></title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <meta name="description" content="NEXUS, votre espace personnel pour suivre revenus, dépenses, budgets et objectifs.">
+    <meta name="robots" content="noindex, nofollow">
+    <meta property="og:title" content="NEXUS — Espace personnel">
+    <meta property="og:description" content="Suivez vos finances, budgets et objectifs dans un espace privé.">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg">
     <link rel="stylesheet" href="assets/css/style.css">
 
     <!-- PWA -->
@@ -57,7 +59,9 @@ $locale      = nexus_locale();
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NEXUS">
 
-    <script src="assets/js/chart.umd.min.js"></script>
+    <?php if (in_array($currentPage, ['dashboard', 'analytics'], true)): ?>
+        <script src="assets/js/chart.umd.min.js"></script>
+    <?php endif; ?>
 </head>
 <body>
 <div class="nexus-shell">
@@ -65,7 +69,7 @@ $locale      = nexus_locale();
     <div class="nexus-overlay" id="nexus-overlay" aria-hidden="true"></div>
 
     <!-- ================================ SIDEBAR ================================ -->
-    <aside class="nexus-sidebar" id="nexus-sidebar" role="navigation" aria-label="<?= th('nav.section') ?>">
+    <aside class="nexus-sidebar" id="nexus-sidebar">
 
         <div class="nexus-brand">
             <div class="logo-mark"><div class="logo-ring"><span class="dot"></span></div></div>
@@ -106,14 +110,16 @@ $locale      = nexus_locale();
             <span class="user-name"><?= htmlspecialchars($userName) ?></span>
             <span class="user-email"><?= htmlspecialchars($userEmail) ?></span>
             <div class="user-meta">
-                <span class="nexus-status-dot"><?= th('layout.online') ?></span>
-                <a href="index.php?page=logout" class="nexus-logout" aria-label="<?= th('layout.logout') ?>">
+                <form action="index.php?page=logout" method="post" class="logout-form">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="nexus-logout" aria-label="<?= th('layout.logout') ?>">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                          stroke-linecap="round" stroke-linejoin="round"
                          width="13" height="13" aria-hidden="true" style="vertical-align:middle;margin-right:4px;">
                         <?= $icons['logout'] ?>
                     </svg><?= th('layout.logout') ?>
-                </a>
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -163,10 +169,6 @@ $locale      = nexus_locale();
                         title="<?= th('layout.change_theme') ?>"
                         style="flex-shrink:0;"></button>
 
-                <div class="nexus-page-tag" aria-hidden="true">
-                    <?= strtoupper(htmlspecialchars($currentPage)) ?>
-                </div>
-                <div class="nexus-clock" id="nexus-clock" aria-label="<?= th('layout.clock_label') ?>">--:--:--</div>
             </div>
         </header>
 

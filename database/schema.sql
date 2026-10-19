@@ -1,147 +1,113 @@
--- ============================================================
--- NEXUS — SCHEMA MYSQL (version consolidée)
--- Exécuter une seule fois sur une base vierge.
--- Usage : mysql -u root -p < database/schema.sql
--- ============================================================
+-- NEXUS PostgreSQL schema. Safe to run at application start.
 
-CREATE DATABASE IF NOT EXISTS nexus CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE nexus;
-
--- --------------------------------------------------------
--- Utilisateurs
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS users (
-    id                    INT AUTO_INCREMENT PRIMARY KEY,
-    name                  VARCHAR(100)  NOT NULL,
-    email                 VARCHAR(150)  NOT NULL UNIQUE,
-    password_hash         VARCHAR(255)  NOT NULL,
-    currency              VARCHAR(10)   NOT NULL DEFAULT 'EUR',
-    theme                 VARCHAR(20)   NOT NULL DEFAULT 'dark',
-    locale                VARCHAR(10)   NOT NULL DEFAULT 'fr',
-    notifications_enabled TINYINT(1)   NOT NULL DEFAULT 1,
-    created_at            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'EUR',
+    theme VARCHAR(20) NOT NULL DEFAULT 'dark',
+    locale VARCHAR(10) NOT NULL DEFAULT 'fr',
+    notifications_enabled SMALLINT NOT NULL DEFAULT 1 CHECK (notifications_enabled IN (0, 1)),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- --------------------------------------------------------
--- Tentatives de connexion (anti brute-force)
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS login_attempts (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    email        VARCHAR(150) NOT NULL,
-    attempted_at DATETIME     NOT NULL,
-    INDEX idx_email_time (email, attempted_at)
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
+    attempted_at TIMESTAMP NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_email_time ON login_attempts (email, attempted_at);
 
--- --------------------------------------------------------
--- Catégories (revenus / dépenses)
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS categories (
-    id      INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT          NOT NULL,
-    name    VARCHAR(80)  NOT NULL,
-    type    ENUM('income','expense') NOT NULL,
-    color   VARCHAR(20)  DEFAULT '#00d9ff',
-    icon    VARCHAR(40)  DEFAULT 'circle',
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name VARCHAR(80) NOT NULL,
+    type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
+    color VARCHAR(20) DEFAULT '#00d9ff',
+    icon VARCHAR(40) DEFAULT 'circle'
+);
 
--- --------------------------------------------------------
--- Transactions (revenus / dépenses)
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS transactions (
-    id              INT AUTO_INCREMENT PRIMARY KEY,
-    user_id         INT            NOT NULL,
-    category_id     INT            NULL,
-    type            ENUM('income','expense') NOT NULL,
-    amount          DECIMAL(12,2)  NOT NULL,
-    label           VARCHAR(150)   NOT NULL,
-    occurred_on     DATE           NOT NULL,
-    recurrence      ENUM('none','daily','weekly','monthly','yearly') NOT NULL DEFAULT 'none',
-    recurrence_end  DATE           NULL,
-    note            TEXT           NULL,
-    created_at      TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id)     REFERENCES users(id)      ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL,
-    INDEX idx_user_date (user_id, occurred_on)
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+    type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
+    amount NUMERIC(12, 2) NOT NULL,
+    label VARCHAR(150) NOT NULL,
+    occurred_on DATE NOT NULL,
+    recurrence VARCHAR(10) NOT NULL DEFAULT 'none' CHECK (recurrence IN ('none', 'daily', 'weekly', 'monthly', 'yearly')),
+    recurrence_end DATE,
+    note TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_user_date ON transactions (user_id, occurred_on);
 
--- --------------------------------------------------------
--- Objectifs financiers
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS goals (
-    id             INT AUTO_INCREMENT PRIMARY KEY,
-    user_id        INT            NOT NULL,
-    title          VARCHAR(150)   NOT NULL,
-    target_amount  DECIMAL(12,2)  NOT NULL,
-    current_amount DECIMAL(12,2)  NOT NULL DEFAULT 0,
-    target_date    DATE           NULL,
-    status         ENUM('active','achieved') NOT NULL DEFAULT 'active',
-    created_at     TIMESTAMP      DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(150) NOT NULL,
+    target_amount NUMERIC(12, 2) NOT NULL,
+    current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    target_date DATE,
+    status VARCHAR(10) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'achieved')),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
 CREATE TABLE IF NOT EXISTS goal_deposits (
-    id           INT AUTO_INCREMENT PRIMARY KEY,
-    goal_id      INT           NOT NULL,
-    amount       DECIMAL(12,2) NOT NULL,
-    deposited_on DATE          NOT NULL,
-    FOREIGN KEY (goal_id) REFERENCES goals(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    goal_id INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+    amount NUMERIC(12, 2) NOT NULL,
+    deposited_on DATE NOT NULL
+);
 
--- --------------------------------------------------------
--- Tâches / Planning
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS tasks (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    user_id    INT          NOT NULL,
-    title      VARCHAR(200) NOT NULL,
-    due_date   DATE         NULL,
-    priority   ENUM('low','medium','high') NOT NULL DEFAULT 'medium',
-    status     ENUM('pending','done')      NOT NULL DEFAULT 'pending',
-    created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(200) NOT NULL,
+    due_date DATE,
+    priority VARCHAR(10) NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high')),
+    status VARCHAR(10) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'done')),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- --------------------------------------------------------
--- Réinitialisation du mot de passe
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS password_resets (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    email      VARCHAR(150) NOT NULL,
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(150) NOT NULL,
     token_hash VARCHAR(255) NOT NULL,
-    expires_at DATETIME     NOT NULL,
-    used       TINYINT(1)   NOT NULL DEFAULT 0,
-    created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_email (email),
-    INDEX idx_token (token_hash)
-) ENGINE=InnoDB;
+    expires_at TIMESTAMP NOT NULL,
+    used SMALLINT NOT NULL DEFAULT 0 CHECK (used IN (0, 1)),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets (email);
+CREATE INDEX IF NOT EXISTS idx_password_resets_token ON password_resets (token_hash);
 
--- --------------------------------------------------------
--- Budgets mensuels par catégorie
--- --------------------------------------------------------
 CREATE TABLE IF NOT EXISTS budgets (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    user_id     INT           NOT NULL,
-    category_id INT           NOT NULL,
-    amount      DECIMAL(12,2) NOT NULL,
-    month       CHAR(7)       NOT NULL COMMENT 'Format YYYY-MM',
-    created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_budget (user_id, category_id, month),
-    FOREIGN KEY (user_id)     REFERENCES users(id)       ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES categories(id)  ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    amount NUMERIC(12, 2) NOT NULL,
+    month CHAR(7) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, category_id, month)
+);
 
--- --------------------------------------------------------
--- Journal d'activité
--- --------------------------------------------------------
+CREATE TABLE IF NOT EXISTS monthly_targets (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    month CHAR(7) NOT NULL,
+    target_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, month)
+);
+
 CREATE TABLE IF NOT EXISTS activity_logs (
-    id         INT AUTO_INCREMENT PRIMARY KEY,
-    user_id    INT          NOT NULL,
-    action     VARCHAR(50)  NOT NULL COMMENT 'create|update|delete|login|logout',
-    entity     VARCHAR(50)  NOT NULL COMMENT 'transaction|goal|task|category|budget|user',
-    entity_id  INT          NULL,
-    summary    VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-    INDEX idx_user_time (user_id, created_at),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action VARCHAR(50) NOT NULL,
+    entity VARCHAR(50) NOT NULL,
+    entity_id INTEGER,
+    summary VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE INDEX IF NOT EXISTS idx_user_time ON activity_logs (user_id, created_at);

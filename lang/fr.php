@@ -1,10 +1,15 @@
 <?php
 /** NEXUS — Traductions françaises (langue par défaut) */
 return [
+    // --- Calendrier (mois localisés) ---
+    'month_names' => [
+        1 => 'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+        'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre',
+    ],
 
     // --- Navigation ---
     'nav' => [
-        'dashboard' => 'Control Center',
+        'dashboard' => 'Tableau de bord',
         'finances'  => 'Finances',
         'budgets'   => 'Budgets',
         'goals'     => 'Objectifs',
@@ -27,7 +32,7 @@ return [
 
     // --- Topbar / Layout ---
     'layout' => [
-        'personal_os'   => 'Personal OS',
+        'personal_os'   => 'Espace personnel',
         'online'        => 'En ligne',
         'logout'        => 'Quitter',
         'clock_label'   => 'Heure actuelle',
@@ -42,14 +47,14 @@ return [
         'register_title'   => 'Créer un compte',
         'forgot_title'     => 'Mot de passe oublié',
         'reset_title'      => 'Nouveau mot de passe',
-        'subtitle_login'   => 'Personal Control Center',
-        'subtitle_register'=> 'Initialiser votre centre',
+        'subtitle_login'   => 'Vos finances, au même endroit',
+        'subtitle_register'=> 'Créez votre espace personnel',
         'subtitle_forgot'  => 'Réinitialisation',
         'email'            => 'Adresse email',
         'password'         => 'Mot de passe',
         'name'             => "Nom d'affichage",
-        'login_btn'        => 'Accéder au système',
-        'register_btn'     => 'Créer mon centre de contrôle',
+        'login_btn'        => 'Se connecter',
+        'register_btn'     => 'Créer un compte',
         'forgot_btn'       => 'Envoyer le lien de réinitialisation',
         'reset_btn'        => 'Enregistrer le nouveau mot de passe',
         'no_account'       => 'Pas encore de compte ?',
@@ -85,7 +90,7 @@ return [
 
     // --- Dashboard ---
     'dashboard' => [
-        'title'           => 'Control Center',
+        'title'           => 'Tableau de bord',
         'score_label'     => 'Score NEXUS',
         'score_great'     => 'Bonne santé financière',
         'score_ok'        => 'Situation correcte',
@@ -120,6 +125,17 @@ return [
         'manage_budgets'  => 'Gérer les budgets',
         'no_results'      => 'Tout semble en ordre.',
         'loading'         => 'Chargement…',
+        'quick_actions'   => 'Actions rapides',
+        'add_income'      => 'Ajouter un revenu',
+        'add_expense'     => 'Ajouter une dépense',
+        'monthly_goal'    => 'Objectif d’épargne du mois',
+        'monthly_goal_hint' => 'Définissez une cible et comparez-la à votre épargne nette réelle.',
+        'monthly_target'  => 'Cible mensuelle',
+        'monthly_actual'  => 'Épargne réelle',
+        'remaining'       => 'Restant',
+        'save_target'     => 'Enregistrer',
+        'expense_ranking' => 'Classement des dépenses',
+        'no_ranking'      => 'Aucune dépense ce mois-ci.',
     ],
 
     // --- Finances ---

@@ -28,7 +28,7 @@ class ActivityLog
     public static function purgeOlderThan(int $userId, int $days = 90): void
     {
         $stmt = db()->prepare(
-            'DELETE FROM activity_logs WHERE user_id = ? AND created_at < DATE_SUB(NOW(), INTERVAL ? DAY)'
+            "DELETE FROM activity_logs WHERE user_id = ? AND created_at < CURRENT_TIMESTAMP - (? * INTERVAL '1 day')"
         );
         $stmt->execute([$userId, $days]);
     }

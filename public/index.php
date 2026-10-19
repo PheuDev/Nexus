@@ -11,6 +11,11 @@ require_once __DIR__ . '/../controllers/SettingsController.php';
 require_once __DIR__ . '/../controllers/BudgetController.php';
 require_once __DIR__ . '/../controllers/SearchController.php';
 
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('Referrer-Policy: same-origin');
+header('Cache-Control: no-store');
+
 $page   = $_GET['page']   ?? 'dashboard';
 $action = $_GET['action'] ?? null;
 $method = $_SERVER['REQUEST_METHOD'];
@@ -20,11 +25,13 @@ $routes = [
     'register' => ['GET' => fn() => (new AuthController())->showRegister(), 'POST:register' => fn() => (new AuthController())->register()],
     'forgot'   => ['GET' => fn() => (new AuthController())->showForgot(),   'POST:send'     => fn() => (new AuthController())->sendReset()],
     'reset'    => ['GET' => fn() => (new AuthController())->showReset(),    'POST:process'  => fn() => (new AuthController())->processReset()],
-    'logout'   => ['GET' => fn() => (new AuthController())->logout()],
+    'logout'   => ['POST:logout' => fn() => (new AuthController())->logout()],
+    'privacy'  => ['GET' => fn() => render('privacy', ['title' => 'Confidentialité'], false)],
 
     'dashboard' => [
         'GET'        => fn() => (new DashboardController())->index(),
         'GET:series' => fn() => (new DashboardController())->series(),
+        'POST:target' => fn() => (new DashboardController())->saveMonthlyTarget(),
     ],
 
     'finances' => [
@@ -109,7 +116,7 @@ if (!isset($routes[$page][$key])) {
     }
 }
 
-$publicPages = ['login', 'register', 'forgot', 'reset'];
+$publicPages = ['login', 'register', 'forgot', 'reset', 'privacy'];
 if (!in_array($page, $publicPages, true)) {
     require_login();
 }

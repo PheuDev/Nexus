@@ -48,6 +48,7 @@ class FinanceController
             'transactions' => $transactions,
             'categories'   => $categories,
             'filters'      => $filters,
+            'quickType'    => in_array($_GET['quick'] ?? '', ['income', 'expense'], true) ? $_GET['quick'] : '',
             'pagination'   => [
                 'page'    => $page,
                 'pages'   => $pages,

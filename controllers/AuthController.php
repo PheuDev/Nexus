@@ -71,6 +71,7 @@ class AuthController
 
     public function logout(): void
     {
+        csrf_require();
         logout_user();
         redirect('index.php?page=login');
     }
@@ -183,7 +184,7 @@ class AuthController
         $tokenHash = hash('sha256', $rawToken);
         $stmt = db()->prepare(
             'SELECT * FROM password_resets
-             WHERE token_hash = ? AND used = 0 AND expires_at > NOW()
+             WHERE token_hash = ? AND used = 0 AND expires_at > CURRENT_TIMESTAMP
              ORDER BY id DESC LIMIT 1'
         );
         $stmt->execute([$tokenHash]);

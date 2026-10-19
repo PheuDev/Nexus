@@ -11,12 +11,12 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
         <div style="display:flex; align-items:center; gap:10px;">
             <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint); font-family:var(--font-mono);"><?= th('dashboard.score_label') ?></div>
-            <div style="font-size:28px; font-weight:800; color:<?= $scoreColor ?>; font-family:var(--font-mono); text-shadow:0 0 20px <?= $scoreColor ?>55;"><?= $score ?><span style="font-size:14px; font-weight:400;">/100</span></div>
+            <div style="font-size:28px; font-weight:700; color:<?= $scoreColor ?>; font-family:var(--font-mono);"><?= $score ?><span style="font-size:14px; font-weight:400;">/100</span></div>
             <span style="font-size:12px; color:var(--text-dim);"><?= htmlspecialchars($scoreLabel) ?></span>
         </div>
         <div style="flex:1; min-width:200px;">
             <div class="progress-track" style="height:8px;">
-                <div class="progress-fill" data-width="<?= $score ?>" style="width:0; background:linear-gradient(90deg,<?= $scoreColor ?>88,<?= $scoreColor ?>);"></div>
+                <div class="progress-fill" data-width="<?= $score ?>" style="width:0; background:<?= $scoreColor ?>;"></div>
             </div>
         </div>
         <?php if (!empty($forecast['income']) || !empty($forecast['expense'])): ?>
@@ -88,6 +88,53 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
         <?php endif; ?>
     </div>
 
+</div>
+
+<!-- Objectif mensuel, classement et accès directs -->
+<div class="grid grid-3 mt-16 dashboard-focus-grid">
+    <section class="panel panel-static monthly-goal-panel">
+        <div class="panel-title-row"><div class="section-title"><?= th('dashboard.monthly_goal') ?></div></div>
+        <p class="dashboard-muted"><?= th('dashboard.monthly_goal_hint') ?></p>
+        <form id="monthly-target-form" class="monthly-target-form">
+            <label for="monthly-target"><?= th('dashboard.monthly_target') ?> (<?= $cur ?>)</label>
+            <div class="monthly-target-controls">
+                <input class="form-control" type="number" id="monthly-target" name="target_amount" min="0" step="0.01" value="<?= htmlspecialchars((string)$monthlyTarget) ?>" required>
+                <button class="btn btn-primary" type="submit"><?= th('dashboard.save_target') ?></button>
+            </div>
+        </form>
+        <?php if ($monthlyTarget > 0): ?>
+        <div class="monthly-goal-stats">
+            <div><span><?= th('dashboard.monthly_actual') ?></span><strong><?= number_format($balance, 0, ',', ' ') ?> <?= $cur ?></strong></div>
+            <div><span><?= th('dashboard.remaining') ?></span><strong><?= number_format(max(0, $monthlyTarget - max(0, $balance)), 0, ',', ' ') ?> <?= $cur ?></strong></div>
+        </div>
+        <div class="progress-track monthly-goal-track"><div class="progress-fill" data-width="<?= $monthlyProgress ?>" style="width:0;background:var(--cyan);"></div></div>
+        <div class="monthly-goal-percent"><?= $monthlyProgress ?>% <?= $monthlyProgress >= 100 ? '• ' . th('dashboard.goal_reached') : '' ?></div>
+        <?php endif; ?>
+    </section>
+
+    <section class="panel panel-static expense-ranking-panel">
+        <div class="panel-title-row"><div class="section-title"><?= th('dashboard.expense_ranking') ?></div><span class="dashboard-month-chip"><?= date('m/Y') ?></span></div>
+        <?php if (empty($expenseRanking)): ?>
+            <div class="empty-state"><?= th('dashboard.no_ranking') ?></div>
+        <?php else: $rankMax = max(array_map(fn($row) => (float)$row['total'], $expenseRanking)); ?>
+            <div class="expense-ranking-list">
+            <?php foreach ($expenseRanking as $rank => $row): $rankPct = $rankMax > 0 ? round(((float)$row['total'] / $rankMax) * 100) : 0; ?>
+                <div class="expense-rank-row">
+                    <div class="flex-between"><span class="expense-rank-name"><b><?= $rank + 1 ?></b><i style="--rank-color:<?= htmlspecialchars($row['color']) ?>"></i><?= htmlspecialchars($row['name']) ?></span><strong><?= number_format($row['total'], 0, ',', ' ') ?> <?= $cur ?></strong></div>
+                    <div class="progress-track"><div class="progress-fill" data-width="<?= $rankPct ?>" style="width:0;background:linear-gradient(90deg,<?= htmlspecialchars($row['color']) ?>,var(--accent-orange));"></div></div>
+                </div>
+            <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </section>
+
+    <section class="panel panel-static quick-actions-panel">
+        <div class="panel-title-row"><div class="section-title"><?= th('dashboard.quick_actions') ?></div></div>
+        <a class="quick-action income-action" href="index.php?page=finances&quick=income"><span>＋</span><?= th('dashboard.add_income') ?><b>↗</b></a>
+        <a class="quick-action expense-action" href="index.php?page=finances&quick=expense"><span>−</span><?= th('dashboard.add_expense') ?><b>↗</b></a>
+        <a class="quick-action goal-action" href="index.php?page=goals"><span>◎</span><?= th('dashboard.create_goal') ?><b>↗</b></a>
+        <a class="quick-action task-action" href="index.php?page=planning"><span>✓</span><?= th('dashboard.planning') ?><b>↗</b></a>
+    </section>
 </div>
 
 <!-- Graphique + Observations -->
@@ -225,7 +272,7 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 <div class="grid mt-16" style="grid-template-columns:1fr;">
     <div class="panel panel-static">
         <div class="panel-title-row">
-            <div class="section-title"><?= th('dashboard.budgets_month') ?> — <?= date('F Y') ?></div>
+            <div class="section-title"><?= th('dashboard.budgets_month') ?> — <?= t_month((int)date('n'), (int)date('Y')) ?></div>
             <a href="index.php?page=budgets" class="btn btn-sm"><?= th('dashboard.manage_budgets') ?></a>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:16px;">
@@ -262,19 +309,55 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 .kpi-sparkline.expense { background:linear-gradient(90deg,transparent,var(--danger)); }
 .task-done { text-decoration:line-through;color:var(--text-faint) !important; }
 .priority-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }
-.priority-dot.priority-high   { background:var(--danger);  box-shadow:0 0 6px var(--danger); }
-.priority-dot.priority-medium { background:var(--warning); box-shadow:0 0 6px var(--warning); }
-.priority-dot.priority-low    { background:var(--success); box-shadow:0 0 6px var(--success); }
+.priority-dot.priority-high   { background:var(--danger); }
+.priority-dot.priority-medium { background:var(--warning); }
+.priority-dot.priority-low    { background:var(--success); }
 .goal-item { padding:8px 0;border-bottom:1px solid var(--border-faint); }
 .goal-item:last-child { border-bottom:none; }
 .period-selector { display:flex;gap:3px;background:rgba(255,255,255,0.04);border:1px solid var(--border-faint);border-radius:var(--radius-sm);padding:3px; }
 .period-btn { padding:4px 10px;border-radius:6px;border:none;background:transparent;color:var(--text-faint);font-size:11px;font-weight:600;font-family:var(--font-mono);cursor:pointer;transition:all .18s ease;letter-spacing:.5px; }
 .period-btn:hover  { color:var(--text-main);background:rgba(255,255,255,0.06); }
 .period-btn.active { background:var(--cyan-glow);color:var(--cyan);border:1px solid var(--border-mid); }
+.dashboard-focus-grid { align-items:stretch; }
+.monthly-goal-panel,.expense-ranking-panel,.quick-actions-panel { border-top:2px solid var(--compass-silver); }
+.dashboard-muted { color:var(--text-dim);font-size:12px;margin:0 0 14px; }
+.monthly-target-form label { display:block;color:var(--text-faint);font-size:11px;margin-bottom:6px; }
+.monthly-target-controls { display:flex;gap:8px; }
+.monthly-target-controls .form-control { min-width:0; }
+.monthly-goal-stats { display:flex;justify-content:space-between;gap:12px;margin:16px 0 10px; }
+.monthly-goal-stats div { display:grid;gap:3px; }
+.monthly-goal-stats span { color:var(--text-faint);font-size:10px;text-transform:uppercase;letter-spacing:.6px; }
+.monthly-goal-stats strong { color:var(--compass-polished);font-family:var(--font-mono);font-size:13px; }
+.monthly-goal-track { height:9px; }
+.monthly-goal-percent { color:var(--accent-orange);font:700 11px var(--font-mono);text-align:right;margin-top:5px; }
+.dashboard-month-chip { color:var(--compass-polished);background:var(--compass-glaze);border:1px solid var(--compass-edge);padding:3px 9px;border-radius:var(--radius-pill);font:11px var(--font-mono); }
+.expense-ranking-list { display:grid;gap:12px; }
+.expense-rank-row .flex-between { margin-bottom:5px;gap:8px; }
+.expense-rank-name { display:flex;align-items:center;gap:8px;color:var(--text-main);font-size:12px; }
+.expense-rank-name b { color:var(--compass-silver);font:700 11px var(--font-mono); }
+.expense-rank-name i { width:8px;height:8px;border-radius:50%;background:var(--rank-color); }
+.expense-rank-row strong { color:var(--text-bright);font:600 11px var(--font-mono);white-space:nowrap; }
+.quick-actions-panel { display:flex;flex-direction:column; }
+.quick-action { display:flex;align-items:center;gap:10px;padding:10px 12px;margin:3px 0;border:1px solid var(--border-faint);border-radius:var(--radius-sm);color:var(--text-main);font-weight:600;transition:transform .2s,border-color .2s,background .2s; }
+.quick-action:hover { transform:translateX(3px);border-color:var(--compass-edge);background:var(--compass-glaze); }
+.quick-action span { display:grid;place-items:center;width:25px;height:25px;border-radius:8px;font-size:17px;font-weight:800; }
+.quick-action b { margin-left:auto;color:var(--compass-silver); }
+.income-action span { color:var(--success);background:var(--success-dim); }
+.expense-action span { color:var(--danger);background:var(--danger-dim); }
+.goal-action span { color:var(--violet);background:var(--violet-dim); }
+.task-action span { color:var(--accent-orange);background:var(--accent-orange-dim); }
+@media(max-width:900px) { .dashboard-focus-grid { grid-template-columns:1fr; } }
 </style>
 
 <script>
 (function () {
+    document.getElementById('monthly-target-form')?.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const data = Object.fromEntries(new FormData(this));
+        const res = await NEXUS.post('index.php?page=dashboard&action=target', data);
+        if (res.success) { NEXUS.toast('<?= th('dashboard.save_target') ?>', 'success'); window.location.reload(); }
+        else NEXUS.toast(res.error || '<?= th('common.error') ?>', 'error');
+    });
     // Noms des mois depuis les traductions PHP
     const MONTH_NAMES = <?= json_encode(t('months')) ?>;
 

@@ -140,3 +140,12 @@ function th(string $key, array $replace = []): string
 {
     return htmlspecialchars(t($key, $replace), ENT_QUOTES, 'UTF-8');
 }
+/**
+ * Nom du mois localisé — ex: t_month(10, 2026) → « octobre 2026 » (fr).
+ * Utilisé pour dater les widgets (« Budgets — octobre 2026 »).
+ */
+function t_month(int $month, ?int $year = null): string
+{
+    $label = t('month_names.' . $month);
+    return $year === null ? $label : $label . ' ' . $year;
+}

@@ -1,9 +1,14 @@
 <?php
 /** NEXUS — English translations */
 return [
+    // --- Calendar (localized month names) ---
+    'month_names' => [
+        1 => 'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+    ],
 
     'nav' => [
-        'dashboard' => 'Control Center',
+        'dashboard' => 'Dashboard',
         'finances'  => 'Finances',
         'budgets'   => 'Budgets',
         'goals'     => 'Goals',
@@ -25,7 +30,7 @@ return [
     ],
 
     'layout' => [
-        'personal_os'        => 'Personal OS',
+        'personal_os'        => 'Your space',
         'online'             => 'Online',
         'logout'             => 'Sign out',
         'clock_label'        => 'Current time',
@@ -39,14 +44,14 @@ return [
         'register_title'    => 'Create account',
         'forgot_title'      => 'Forgot password',
         'reset_title'       => 'New password',
-        'subtitle_login'    => 'Personal Control Center',
-        'subtitle_register' => 'Initialize your center',
+        'subtitle_login'    => 'Keep your finances in one place',
+        'subtitle_register' => 'Create your personal space',
         'subtitle_forgot'   => 'Password reset',
         'email'             => 'Email address',
         'password'          => 'Password',
         'name'              => 'Display name',
-        'login_btn'         => 'Access the system',
-        'register_btn'      => 'Create my control center',
+        'login_btn'         => 'Sign in',
+        'register_btn'      => 'Create account',
         'forgot_btn'        => 'Send reset link',
         'reset_btn'         => 'Save new password',
         'no_account'        => 'No account yet?',
@@ -81,7 +86,7 @@ return [
     ],
 
     'dashboard' => [
-        'title'          => 'Control Center',
+        'title'          => 'Dashboard',
         'score_label'    => 'NEXUS Score',
         'score_great'    => 'Good financial health',
         'score_ok'       => 'Situation is fair',
@@ -116,6 +121,17 @@ return [
         'manage_budgets' => 'Manage budgets',
         'no_results'     => 'Everything looks good.',
         'loading'        => 'Loading…',
+        'quick_actions'  => 'Quick actions',
+        'add_income'     => 'Add income',
+        'add_expense'    => 'Add expense',
+        'monthly_goal'   => 'Monthly savings goal',
+        'monthly_goal_hint' => 'Set a target and compare it with your actual net savings.',
+        'monthly_target' => 'Monthly target',
+        'monthly_actual' => 'Actual savings',
+        'remaining'      => 'Remaining',
+        'save_target'    => 'Save target',
+        'expense_ranking'=> 'Expense ranking',
+        'no_ranking'     => 'No expenses this month.',
     ],
 
     'finance' => [

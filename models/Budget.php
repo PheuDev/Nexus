@@ -14,7 +14,7 @@ class Budget
                        SELECT SUM(t.amount) FROM transactions t
                        WHERE t.user_id = b.user_id
                          AND t.category_id = b.category_id
-                         AND DATE_FORMAT(t.occurred_on, '%Y-%m') = b.month
+                         AND TO_CHAR(t.occurred_on, 'YYYY-MM') = b.month
                    ), 0) AS spent
             FROM budgets b
             JOIN categories c ON c.id = b.category_id
@@ -38,7 +38,7 @@ class Budget
         $stmt = db()->prepare("
             INSERT INTO budgets (user_id, category_id, month, amount)
             VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE amount = VALUES(amount)
+            ON CONFLICT (user_id, category_id, month) DO UPDATE SET amount = EXCLUDED.amount
         ");
         $stmt->execute([$userId, $categoryId, $month, $amount]);
     }

@@ -2,10 +2,10 @@
 
 > **Sophistication dans le rendu. Simplicité dans le code.**
 
-NEXUS est un Personal OS web — une application PHP/MySQL conçue comme un véritable centre de contrôle personnel : finances, objectifs, planning, analyse, budgets, historique d'activité, prévisions financières et score de santé financière. Interface dark/cybernétique premium, PWA installable, i18n FR/EN/ES.
+NEXUS est une application web PHP/PostgreSQL de suivi personnel : finances, objectifs, planning, budgets et historique d'activité. Interface disponible en français, anglais et espagnol.
 
 ![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?style=flat&logo=php&logoColor=white)
-![MySQL](https://img.shields.io/badge/MySQL-8.0+-4479A1?style=flat&logo=mysql&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16+-4169E1?style=flat&logo=postgresql&logoColor=white)
 ![Chart.js](https://img.shields.io/badge/Chart.js-4.4-FF6384?style=flat&logo=chartdotjs&logoColor=white)
 ![License](https://img.shields.io/badge/license-MIT-green?style=flat)
 
@@ -30,7 +30,7 @@ NEXUS est un Personal OS web — une application PHP/MySQL conçue comme un vér
 | Couche | Technologie |
 |--------|-------------|
 | Serveur | PHP 8.1+ |
-| Base de données | MySQL 8.0+ / MariaDB |
+| Base de données | PostgreSQL 16+ |
 | Frontend | HTML5, CSS3 vanilla, JavaScript vanilla |
 | Graphiques | Chart.js 4.4 (local, pas de CDN) |
 | Architecture | MVC pragmatique, front controller centralisé |
@@ -45,8 +45,8 @@ Pas de framework, pas de dépendances npm, pas de build step. PHP pur.
 
 ### Prérequis
 
-- PHP 8.1+ avec extensions `pdo_mysql` et `session`
-- MySQL 8.0+ ou MariaDB
+- PHP 8.1+ avec extensions `pdo_pgsql` et `session`
+- PostgreSQL 16+
 - Serveur local : WAMP, MAMP, Laragon, ou `php -S`
 
 ### Étapes
@@ -58,13 +58,13 @@ cd nexus
 
 # 2. Configurer la base de données
 cp config/config.example.php config/config.php
-# Éditer config/config.php avec vos identifiants MySQL
+# Renseigner DATABASE_URL ou les variables PGHOST, PGPORT, PGDATABASE, PGUSER et PGPASSWORD
 
 # 3. Créer les tables
-mysql -u root -p < database/schema.sql
+psql "$DATABASE_URL" -f database/schema.sql
 
 # 4. (Optionnel) Charger les données de démonstration
-mysql -u root -p < database/seed.sql
+# seed.sql est spécifique à MySQL : ne pas l'importer dans PostgreSQL
 
 # 5. Lancer
 # Avec WAMP/MAMP : placer le dossier dans www/ ou htdocs/
@@ -72,7 +72,13 @@ mysql -u root -p < database/seed.sql
 php -S localhost:8000 -t public
 ```
 
-Ouvrir : `http://localhost/nexus/public/` (ou `http://localhost:8000/`)
+Ouvrir : `http://localhost:8000/`
+
+## Déploiement sur Render
+
+Le dépôt contient un `Dockerfile` et un `render.yaml`. Après avoir poussé la branche `main` sur GitHub, créez un Blueprint Render depuis ce dépôt. Le Blueprint configure le service PHP et PostgreSQL dans la région de Francfort. Le schéma est appliqué au démarrage.
+
+Les deux ressources sont réglées sur l'offre gratuite pour les essais. Render supprime les bases PostgreSQL gratuites après 30 jours ; passez la base à une offre payante et configurez une sauvegarde avant d'y saisir de vraies données financières.
 
 ---
 

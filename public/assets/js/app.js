@@ -98,22 +98,6 @@ const NEXUS = {
         });
     },
 
-    initRipple() {
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.btn');
-            if (!btn) return;
-            const rect = btn.getBoundingClientRect();
-            const size = Math.max(rect.width, rect.height);
-            const ripple = document.createElement('span');
-            ripple.style.cssText = `position:absolute;width:${size}px;height:${size}px;left:${e.clientX - rect.left - size / 2}px;top:${e.clientY - rect.top - size / 2}px;background:rgba(255,255,255,0.12);border-radius:50%;transform:scale(0);animation:rippleAnim .5s ease-out forwards;pointer-events:none;`;
-            const prevPos = getComputedStyle(btn).position;
-            if (prevPos === 'static') btn.style.position = 'relative';
-            btn.style.overflow = 'hidden';
-            btn.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 520);
-        });
-    },
-
     /**
      * Toggle thème dark/light. Sauvegarde la préférence en base via AJAX, applique immédiatement.
     */
@@ -210,19 +194,6 @@ function nexusInitSearch() {
     });
 }
 
-/* HORLOGE LIVE */
-function nexusStartClock() {
-    const el = document.getElementById('nexus-clock');
-    if (!el) return;
-    const tick = () => {
-        el.textContent = new Date().toLocaleTimeString('fr-FR', {
-            hour: '2-digit', minute: '2-digit', second: '2-digit',
-        });
-    };
-    tick();
-    setInterval(tick, 1000);
-}
-
 /* NAVIGATION MOBILE */
 
 function nexusInitMobileNav() {
@@ -259,33 +230,6 @@ function nexusInitModalFocus() {
 }
 
 /* ANIMATIONS D'ENTRÉE TABLEAU / LISTE */
-function nexusAnimateTableRows() {
-    document.querySelectorAll('.nexus-table tbody tr').forEach((row, i) => {
-        row.style.opacity = '0';
-        row.style.transform = 'translateX(-8px)';
-        row.style.transition = `opacity .25s ease ${i * .03}s,transform .25s ease ${i * .03}s`;
-        requestAnimationFrame(() => setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'none'; }, 40));
-    });
-}
-
-function nexusAnimateListRows() {
-    document.querySelectorAll('.list-row').forEach((row, i) => {
-        row.style.opacity = '0';
-        row.style.transform = 'translateY(6px)';
-        row.style.transition = `opacity .22s ease ${i * .04}s,transform .22s ease ${i * .04}s`;
-        requestAnimationFrame(() => setTimeout(() => { row.style.opacity = '1'; row.style.transform = 'none'; }, 40));
-    });
-}
-
-/* CSS DYNAMIQUE (ripple uniquement — plus de panel opacity) */
-function nexusInjectDynamicCSS() {
-    if (document.getElementById('nexus-dynamic-style')) return;
-    const style = document.createElement('style');
-    style.id = 'nexus-dynamic-style';
-    style.textContent = `@keyframes rippleAnim { to { transform:scale(2.5); opacity:0; } }`;
-    document.head.appendChild(style);
-}
-
 /* TOGGLE THÈME — init icône au chargement */
 function nexusInitThemeToggle() {
     const theme = document.documentElement.getAttribute('data-theme') || 'dark';
@@ -296,14 +240,9 @@ function nexusInitThemeToggle() {
 
 /* INITIALISATION */
 document.addEventListener('DOMContentLoaded', () => {
-    nexusInjectDynamicCSS();
-    nexusStartClock();
     nexusInitMobileNav();
     nexusInitModalFocus();
     nexusInitThemeToggle();
     nexusInitSearch();
     NEXUS.animateProgress();
-    NEXUS.initRipple();
-    nexusAnimateTableRows();
-    nexusAnimateListRows();
 });

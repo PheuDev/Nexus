@@ -2,7 +2,7 @@
  * NEXUS — Service Worker
  * Cache les assets statiques pour un accès hors ligne partiel.
  */
-const CACHE_NAME  = 'nexus-v1';
+const CACHE_NAME  = 'nexus-v2';
 const APP_BASE = new URL('.', self.location).pathname;
 const CACHE_ASSETS = [
     `${APP_BASE}assets/css/style.css`,

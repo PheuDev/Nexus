@@ -63,7 +63,7 @@ class SettingsController
         $db->prepare('UPDATE goals SET target_amount = ROUND(target_amount * ?, 2), current_amount = ROUND(current_amount * ?, 2) WHERE user_id = ?')
            ->execute([$rate, $rate, $userId]);
         // Dépôts d'objectifs (via JOIN pour isoler par user_id)
-        $db->prepare('UPDATE goal_deposits gd JOIN goals g ON gd.goal_id = g.id SET gd.amount = ROUND(gd.amount * ?, 2) WHERE g.user_id = ?')
+        $db->prepare('UPDATE goal_deposits AS gd SET amount = ROUND(gd.amount * ?, 2) FROM goals AS g WHERE gd.goal_id = g.id AND g.user_id = ?')
            ->execute([$rate, $userId]);
     }
 

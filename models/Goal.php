@@ -22,9 +22,9 @@ class Goal
     public static function create(int $userId, string $title, float $target, ?string $targetDate): int
     {
         $stmt = db()->prepare('INSERT INTO goals (user_id, title, target_amount, current_amount, target_date)
-                                VALUES (?, ?, ?, 0, ?)');
+                                VALUES (?, ?, ?, 0, ?) RETURNING id');
         $stmt->execute([$userId, $title, $target, $targetDate ?: null]);
-        return (int)db()->lastInsertId();
+        return (int)$stmt->fetchColumn();
     }
 
     public static function update(int $id, int $userId, string $title, float $target, ?string $targetDate): bool

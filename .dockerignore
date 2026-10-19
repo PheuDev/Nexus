@@ -1,0 +1,8 @@
+.git
+Nexus/
+Nexus.zip
+portfolio/
+node_modules/
+vendor/
+config/config.php
+*.log

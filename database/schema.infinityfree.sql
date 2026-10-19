@@ -125,6 +125,17 @@ CREATE TABLE IF NOT EXISTS budgets (
     FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
+-- Objectif d'épargne défini par utilisateur et par mois
+CREATE TABLE IF NOT EXISTS monthly_targets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    month CHAR(7) NOT NULL COMMENT 'Format YYYY-MM',
+    target_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_monthly_target (user_id, month),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 -- --------------------------------------------------------
 -- Journal d'activité
 -- --------------------------------------------------------

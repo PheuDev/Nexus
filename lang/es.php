@@ -1,9 +1,14 @@
 <?php
 /** NEXUS — Traducciones en español */
 return [
+    // --- Calendario (meses localizados) ---
+    'month_names' => [
+        1 => 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ],
 
     'nav' => [
-        'dashboard' => 'Centro de Control',
+        'dashboard' => 'Resumen',
         'finances'  => 'Finanzas',
         'budgets'   => 'Presupuestos',
         'goals'     => 'Objetivos',
@@ -25,7 +30,7 @@ return [
     ],
 
     'layout' => [
-        'personal_os'        => 'Personal OS',
+        'personal_os'        => 'Tu espacio',
         'online'             => 'En línea',
         'logout'             => 'Salir',
         'clock_label'        => 'Hora actual',
@@ -39,14 +44,14 @@ return [
         'register_title'    => 'Crear cuenta',
         'forgot_title'      => 'Olvidé mi contraseña',
         'reset_title'       => 'Nueva contraseña',
-        'subtitle_login'    => 'Centro de Control Personal',
-        'subtitle_register' => 'Inicializar su centro',
+        'subtitle_login'    => 'Tus finanzas, en un solo lugar',
+        'subtitle_register' => 'Crea tu espacio personal',
         'subtitle_forgot'   => 'Restablecimiento',
         'email'             => 'Correo electrónico',
         'password'          => 'Contraseña',
         'name'              => 'Nombre de usuario',
-        'login_btn'         => 'Acceder al sistema',
-        'register_btn'      => 'Crear mi centro de control',
+        'login_btn'         => 'Iniciar sesión',
+        'register_btn'      => 'Crear cuenta',
         'forgot_btn'        => 'Enviar enlace de restablecimiento',
         'reset_btn'         => 'Guardar nueva contraseña',
         'no_account'        => '¿No tienes cuenta?',
@@ -116,6 +121,17 @@ return [
         'manage_budgets' => 'Gestionar presupuestos',
         'no_results'     => 'Todo parece estar bien.',
         'loading'        => 'Cargando…',
+        'quick_actions'  => 'Acciones rápidas',
+        'add_income'     => 'Añadir ingreso',
+        'add_expense'    => 'Añadir gasto',
+        'monthly_goal'   => 'Objetivo de ahorro mensual',
+        'monthly_goal_hint' => 'Define una meta y compárala con el ahorro neto real.',
+        'monthly_target' => 'Meta mensual',
+        'monthly_actual' => 'Ahorro real',
+        'remaining'      => 'Restante',
+        'save_target'    => 'Guardar meta',
+        'expense_ranking'=> 'Clasificación de gastos',
+        'no_ranking'     => 'No hay gastos este mes.',
     ],
 
     'finance' => [

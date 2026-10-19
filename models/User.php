@@ -26,9 +26,9 @@ class User
     public static function create(string $name, string $email, string $password): int
     {
         $hash = password_hash($password, PASSWORD_DEFAULT);
-        $stmt = db()->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
+        $stmt = db()->prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?) RETURNING id');
         $stmt->execute([$name, $email, $hash]);
-        return (int)db()->lastInsertId();
+        return (int)$stmt->fetchColumn();
     }
 
     public static function verifyPassword(array $user, string $password): bool

@@ -26,6 +26,7 @@ function nexus_start_session(): void
             'lifetime' => 0,
             'path'     => '/',
             'httponly' => true,
+            'secure'   => str_starts_with(APP_URL, 'https://'),
             'samesite' => 'Lax',
         ]);
         session_start();
@@ -111,15 +112,15 @@ function logout_user(): void
 /** Limitation des tentatives de connexion (brute-force basique en DB). */
 function login_attempts_check(string $email): bool
 {
-    $stmt = db()->prepare('SELECT COUNT(*) AS n FROM login_attempts WHERE email = ? AND attempted_at > (NOW() - INTERVAL ' . LOGIN_LOCKOUT_MINUTES . ' MINUTE)');
-    $stmt->execute([$email]);
+    $stmt = db()->prepare("SELECT COUNT(*) AS n FROM login_attempts WHERE email = ? AND attempted_at > CURRENT_TIMESTAMP - (? * INTERVAL '1 minute')");
+    $stmt->execute([$email, LOGIN_LOCKOUT_MINUTES]);
     $row = $stmt->fetch();
     return (int)$row['n'] < MAX_LOGIN_ATTEMPTS;
 }
 
 function login_attempts_register(string $email): void
 {
-    $stmt = db()->prepare('INSERT INTO login_attempts (email, attempted_at) VALUES (?, NOW())');
+    $stmt = db()->prepare('INSERT INTO login_attempts (email, attempted_at) VALUES (?, CURRENT_TIMESTAMP)');
     $stmt->execute([$email]);
 }
 
@@ -199,7 +200,7 @@ function pending_tasks_count(): int
         return 0;
     }
     // Le modèle Task n'est pas toujours chargé : on interroge la DB directement
-    $stmt = db()->prepare('SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status = "pending"');
+    $stmt = db()->prepare("SELECT COUNT(*) FROM tasks WHERE user_id = ? AND status = 'pending'");
     $stmt->execute([current_user_id()]);
     return (int)$stmt->fetchColumn();
 }
