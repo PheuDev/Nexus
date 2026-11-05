@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS categories (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(80) NOT NULL,
     type VARCHAR(10) NOT NULL CHECK (type IN ('income', 'expense')),
-    color VARCHAR(20) DEFAULT '#00d9ff',
+    color VARCHAR(20) DEFAULT '#a783ff',
     icon VARCHAR(40) DEFAULT 'circle'
 );
 

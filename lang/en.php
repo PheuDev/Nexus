@@ -72,6 +72,7 @@ return [
         'new_request'       => 'Make a new request',
         'authenticating'    => 'Authenticating...',
         'access_granted'    => 'Access granted ✓',
+        'login_network_error' => 'Unable to connect right now. Check your connection and try again.',
         'initializing'      => 'Initializing...',
         'initialized'       => 'System initialized ✓',
         'sending'           => 'Sending...',

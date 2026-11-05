@@ -72,6 +72,7 @@ return [
         'new_request'       => 'Hacer una nueva solicitud',
         'authenticating'    => 'Autenticando...',
         'access_granted'    => 'Acceso concedido ✓',
+        'login_network_error' => 'No se pudo conectar. Comprueba tu conexión e inténtalo de nuevo.',
         'initializing'      => 'Inicializando...',
         'initialized'       => 'Sistema inicializado ✓',
         'sending'           => 'Enviando...',

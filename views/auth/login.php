@@ -87,11 +87,27 @@ document.getElementById('login-form').addEventListener('submit', async(e)=>{
     btn.disabled=true;
     btn.textContent='<?= th('auth.authenticating') ?>';
     const data=Object.fromEntries(new FormData(e.target));
-    const res=await NEXUS.post('index.php?page=login&action=login',data);
-    if(res.success){
-        btn.textContent='<?= th('auth.access_granted') ?>';
-        setTimeout(()=>{window.location.href=res.redirect;},400);
-    } else {
+    try {
+        const res=await NEXUS.post('index.php?page=login&action=login',data);
+        if(res.success){
+            btn.textContent='<?= th('auth.access_granted') ?>';
+            const body=new URLSearchParams({csrf_token:NEXUS.csrfToken});
+            fetch('index.php?page=login&action=recurring',{
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+                credentials:'same-origin',
+                keepalive:true,
+                body
+            }).then(response=>{
+                if(!response.ok) console.error('NEXUS recurring transactions request failed:',response.status);
+                return response.json();
+            }).then(result=>{
+                if(!result.success) console.error('NEXUS recurring transactions were not generated.');
+                if(result.generated>0 && window.location.search.includes('page=dashboard')) window.location.reload();
+            }).catch(error=>console.error('NEXUS recurring transactions request failed:',error));
+            window.location.href=res.redirect;
+            return;
+        }
         btn.classList.remove('loading');
         btn.disabled=false;
         btn.textContent='<?= th('auth.login_btn') ?>';
@@ -100,6 +116,13 @@ document.getElementById('login-form').addEventListener('submit', async(e)=>{
         document.getElementById('login-email').style.borderColor='var(--danger)';
         document.getElementById('login-password').style.borderColor='var(--danger)';
         setTimeout(()=>{document.getElementById('login-email').style.borderColor='';document.getElementById('login-password').style.borderColor='';},2000);
+    } catch (error) {
+        btn.classList.remove('loading');
+        btn.disabled=false;
+        btn.textContent='<?= th('auth.login_btn') ?>';
+        errorBox.textContent='<?= th('auth.login_network_error') ?>';
+        errorBox.style.display='block';
+        console.error('NEXUS login request failed:',error);
     }
 });
 </script>

@@ -43,10 +43,21 @@ class AuthController
         login_attempts_reset($email);
         login_user($user);
         ActivityLog::write((int)$user['id'], 'login', 'user', (int)$user['id'], 'Connexion réussie');
-        // Génère les transactions récurrentes dues depuis la dernière connexion
-        require_once __DIR__ . '/../models/Transaction.php';
-        Transaction::generateRecurring((int)$user['id']);
         json_response(['success' => true, 'redirect' => 'index.php?page=dashboard']);
+    }
+
+    public function generateRecurring(): void
+    {
+        require_login();
+        csrf_require();
+        $userId = current_user_id();
+
+        // Release the session lock before processing recurring transactions.
+        session_write_close();
+
+        require_once __DIR__ . '/../models/Transaction.php';
+        $count = Transaction::generateRecurring($userId);
+        json_response(['success' => true, 'generated' => $count]);
     }
 
     public function register(): void

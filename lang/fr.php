@@ -75,6 +75,7 @@ return [
         'new_request'      => 'Faire une nouvelle demande',
         'authenticating'   => 'Authentification...',
         'access_granted'   => 'Accès autorisé ✓',
+        'login_network_error' => 'Connexion impossible pour le moment. Vérifiez votre réseau puis réessayez.',
         'initializing'     => 'Initialisation...',
         'initialized'      => 'Système initialisé ✓',
         'sending'          => 'Envoi en cours...',

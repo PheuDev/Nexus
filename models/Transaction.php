@@ -261,54 +261,59 @@ class Transaction
         return $result;
     }
 
-    /** Génère les transactions récurrentes dues depuis la dernière exécution. Elle est appelée au login de l'utilisateur. */
+    /** Génère de manière atomique les transactions récurrentes dues pour l'utilisateur. */
     public static function generateRecurring(int $userId): int
     {
         $today = date('Y-m-d');
         $count = 0;
+        $pdo = db();
+        $pdo->beginTransaction();
+        try {
+            $pdo->prepare('SELECT pg_advisory_xact_lock(?, ?)')->execute([78654321, $userId]);
 
-        // Toutes les transactions récurrentes actives
-        $stmt = db()->prepare("SELECT * FROM transactions
-            WHERE user_id = ? AND recurrence != 'none'
-            AND (recurrence_end IS NULL OR recurrence_end >= ?)
-            ORDER BY occurred_on ASC");
-        $stmt->execute([$userId, $today]);
-        $recurring = $stmt->fetchAll();
+            $stmt = $pdo->prepare("SELECT * FROM transactions
+                WHERE user_id = ? AND recurrence != 'none'
+                AND (recurrence_end IS NULL OR recurrence_end >= ?)
+                ORDER BY occurred_on ASC");
+            $stmt->execute([$userId, $today]);
+            $recurring = $stmt->fetchAll();
 
-        foreach ($recurring as $tx) {
-            $nextDate = self::nextRecurrenceDate($tx['occurred_on'], $tx['recurrence']);
+            foreach ($recurring as $tx) {
+                $nextDate = self::nextRecurrenceDate($tx['occurred_on'], $tx['recurrence']);
 
-            // Génère toutes les occurrences manquées jusqu'à aujourd'hui
-            while ($nextDate <= $today) {
-                if (!empty($tx['recurrence_end']) && $nextDate > $tx['recurrence_end']) break;
+                while ($nextDate <= $today) {
+                    if (!empty($tx['recurrence_end']) && $nextDate > $tx['recurrence_end']) break;
 
-                // Vérifie qu'on n'a pas déjà créé cette occurrence
-                $check = db()->prepare("SELECT id FROM transactions
-                    WHERE user_id = ? AND label = ? AND amount = ? AND occurred_on = ? AND recurrence = 'none'");
-                $check->execute([$userId, $tx['label'], $tx['amount'], $nextDate]);
+                    $check = $pdo->prepare("SELECT id FROM transactions
+                        WHERE user_id = ? AND label = ? AND amount = ? AND occurred_on = ? AND recurrence = 'none'");
+                    $check->execute([$userId, $tx['label'], $tx['amount'], $nextDate]);
 
-                if (!$check->fetch()) {
-                    $ins = db()->prepare("INSERT INTO transactions (user_id, category_id, type, amount, label, occurred_on, recurrence, note)
-                        VALUES (?, ?, ?, ?, ?, ?, 'none', ?)");
-                    $ins->execute([
-                        $userId, $tx['category_id'], $tx['type'],
-                        $tx['amount'], $tx['label'], $nextDate, $tx['note'],
-                    ]);
-                    $count++;
+                    if (!$check->fetch()) {
+                        $ins = $pdo->prepare("INSERT INTO transactions (user_id, category_id, type, amount, label, occurred_on, recurrence, note)
+                            VALUES (?, ?, ?, ?, ?, ?, 'none', ?)");
+                        $ins->execute([
+                            $userId, $tx['category_id'], $tx['type'],
+                            $tx['amount'], $tx['label'], $nextDate, $tx['note'],
+                        ]);
+                        $count++;
+                    }
+
+                    $nextDate = self::nextRecurrenceDate($nextDate, $tx['recurrence']);
                 }
 
-                // Avance la date source pour la prochaine itération
-                $nextDate = self::nextRecurrenceDate($nextDate, $tx['recurrence']);
+                if ($nextDate !== self::nextRecurrenceDate($tx['occurred_on'], $tx['recurrence'])) {
+                    $pdo->prepare("UPDATE transactions SET occurred_on = ? WHERE id = ?")
+                        ->execute([date('Y-m-d', strtotime($nextDate . ' -1 ' . self::recurrenceInterval($tx['recurrence']))), $tx['id']]);
+                }
             }
 
-            // Met à jour la date de base pour éviter de re-générer
-            if ($nextDate !== self::nextRecurrenceDate($tx['occurred_on'], $tx['recurrence'])) {
-                db()->prepare("UPDATE transactions SET occurred_on = ? WHERE id = ?")
-                   ->execute([date('Y-m-d', strtotime($nextDate . ' -1 ' . self::recurrenceInterval($tx['recurrence']))), $tx['id']]);
+            $pdo->commit();
+            return $count;
+        } finally {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
             }
         }
-
-        return $count;
     }
 
     private static function nextRecurrenceDate(string $from, string $recurrence): string

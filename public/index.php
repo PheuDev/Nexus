@@ -21,7 +21,11 @@ $action = $_GET['action'] ?? null;
 $method = $_SERVER['REQUEST_METHOD'];
 
 $routes = [
-    'login'    => ['GET' => fn() => (new AuthController())->showLogin(),    'POST:login'    => fn() => (new AuthController())->login()],
+    'login'    => [
+        'GET'            => fn() => (new AuthController())->showLogin(),
+        'POST:login'     => fn() => (new AuthController())->login(),
+        'POST:recurring' => fn() => (new AuthController())->generateRecurring(),
+    ],
     'register' => ['GET' => fn() => (new AuthController())->showRegister(), 'POST:register' => fn() => (new AuthController())->register()],
     'forgot'   => ['GET' => fn() => (new AuthController())->showForgot(),   'POST:send'     => fn() => (new AuthController())->sendReset()],
     'reset'    => ['GET' => fn() => (new AuthController())->showReset(),    'POST:process'  => fn() => (new AuthController())->processReset()],

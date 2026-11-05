@@ -22,23 +22,23 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 </form>
 
 <!-- Score + prévisions -->
-<div class="panel panel-static" style="margin-bottom:16px; padding:14px 20px;">
-    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint); font-family:var(--font-mono);"><?= th('dashboard.score_label') ?></div>
-            <div style="font-size:28px; font-weight:700; color:<?= $scoreColor ?>; font-family:var(--font-mono);"><?= $score ?><span style="font-size:14px; font-weight:400;">/100</span></div>
+<div class="panel panel-static dashboard-score-panel" style="margin-bottom:16px; padding:14px 20px;">
+    <div class="dashboard-score-layout" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div class="dashboard-score-meta" style="display:flex; align-items:center; gap:10px;">
+            <div class="dashboard-score-label" style="font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-faint); font-family:var(--font-mono);"><?= th('dashboard.score_label') ?></div>
+            <div class="dashboard-score-number" style="font-size:28px; font-weight:700; color:<?= $scoreColor ?>; font-family:var(--font-mono);"><?= $score ?><span style="font-size:14px; font-weight:400;">/100</span></div>
             <span style="font-size:12px; color:var(--text-dim);"><?= htmlspecialchars($scoreLabel) ?></span>
         </div>
-        <div style="flex:1; min-width:200px;">
+        <div class="dashboard-score-progress" style="flex:1; min-width:200px;">
             <div class="progress-track" style="height:8px;">
                 <div class="progress-fill" data-width="<?= $score ?>" style="width:0; background:<?= $scoreColor ?>;"></div>
             </div>
         </div>
         <?php if (!empty($forecast['income']) || !empty($forecast['expense'])): ?>
-        <div style="display:flex; gap:16px; font-size:12px; color:var(--text-faint); border-left:1px solid var(--border-faint); padding-left:16px;">
-            <span><?= th('dashboard.forecast_label') ?> —</span>
-            <span style="color:var(--success);">↑ <?= number_format($forecast['income'], 0, ',', ' ') ?> <?= $cur ?></span>
-            <span style="color:var(--danger);">↓ <?= number_format($forecast['expense'], 0, ',', ' ') ?> <?= $cur ?></span>
+        <div class="dashboard-forecast" style="display:flex; gap:16px; font-size:12px; color:var(--text-faint); border-left:1px solid var(--border-faint); padding-left:16px;">
+            <span class="dashboard-forecast-label"><?= th('dashboard.forecast_label') ?> —</span>
+            <span class="dashboard-forecast-income" style="color:var(--success);">↑ <?= number_format($forecast['income'], 0, ',', ' ') ?> <?= $cur ?></span>
+            <span class="dashboard-forecast-expense" style="color:var(--danger);">↓ <?= number_format($forecast['expense'], 0, ',', ' ') ?> <?= $cur ?></span>
         </div>
         <?php endif; ?>
     </div>

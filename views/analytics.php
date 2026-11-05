@@ -112,7 +112,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     const tc      = isDark?'#aab9b1':'#708276';
     const gc      = isDark?'rgba(220,235,226,0.07)':'rgba(48,77,64,0.1)';
     const tbg     = isDark?'#202d28':'#ffffff';
-    const tooltip = isDark?'rgba(121,214,193,0.3)':'rgba(45,139,119,0.3)';
+    const tooltip = isDark?'rgba(167,131,255,0.35)':'rgba(104,69,207,0.3)';
     const def     = { plugins:{ legend:{labels:{color:tc,font:{family:'Inter',size:12},boxWidth:12,padding:16}}, tooltip:{backgroundColor:tbg,borderColor:tooltip,borderWidth:1,titleColor:isDark?'#f3f7f4':'#15251d',bodyColor:tc,padding:12} }, scales:{ x:{ticks:{color:tc,font:{size:11}},grid:{color:gc}}, y:{ticks:{color:tc,font:{size:11}},grid:{color:gc}} } };
 
     new Chart(document.getElementById('chart-evo'),{
@@ -128,7 +128,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     if(cats.length>0){
         new Chart(document.getElementById('chart-cat'),{
             type:'doughnut',
-            data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>parseFloat(c.total)),backgroundColor:cats.map(c=>c.color||'#79d6c1'),borderWidth:2,borderColor:isDark?'#18221f':'#ffffff',hoverOffset:8}]},
+            data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>parseFloat(c.total)),backgroundColor:cats.map(c=>c.color||'#a783ff'),borderWidth:2,borderColor:isDark?'#111627':'#ffffff',hoverOffset:8}]},
             options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
                 plugins:{
                     legend:{position:'bottom',labels:{color:tc,font:{family:'Inter',size:11},padding:14,boxWidth:10}},
