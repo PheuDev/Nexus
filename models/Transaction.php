@@ -197,15 +197,31 @@ class Transaction
         return $stmt->fetchAll();
     }
 
+    public static function monthlySeriesForPeriod(int $userId, string $from, string $to): array
+    {
+        $stmt = db()->prepare("SELECT TO_CHAR(occurred_on, 'YYYY-MM') AS ym, type, SUM(amount) AS total
+                                FROM transactions
+                                WHERE user_id = ? AND occurred_on BETWEEN ? AND ?
+                                GROUP BY ym, type ORDER BY ym ASC");
+        $stmt->execute([$userId, $from, $to]);
+        return $stmt->fetchAll();
+    }
+
     public static function byCategory(int $userId, string $type, string $from, string $to): array
     {
         $stmt = db()->prepare("SELECT c.name, c.color, SUM(t.amount) AS total
                                 FROM transactions t
-                                JOIN categories c ON c.id = t.category_id
+                                LEFT JOIN categories c ON c.id = t.category_id AND c.user_id = t.user_id
                                 WHERE t.user_id = ? AND t.type = ? AND t.occurred_on BETWEEN ? AND ?
-                                GROUP BY c.id ORDER BY total DESC");
+                                GROUP BY c.id, c.name, c.color ORDER BY total DESC");
         $stmt->execute([$userId, $type, $from, $to]);
-        return $stmt->fetchAll();
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$row) {
+            $row['name'] = $row['name'] ?? 'Sans catégorie';
+            $row['color'] = $row['color'] ?? '#ff8a3d';
+        }
+        unset($row);
+        return $rows;
     }
 
     public static function expenseRanking(int $userId, string $from, string $to): array

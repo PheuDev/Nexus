@@ -6,6 +6,22 @@ $scoreColor = $score >= 70 ? 'var(--success)' : ($score >= 40 ? 'var(--warning)'
 $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('dashboard.score_ok') : t('dashboard.score_bad'));
 ?>
 
+<form method="get" action="index.php" class="panel panel-static" style="margin-bottom:16px;">
+    <input type="hidden" name="page" value="dashboard">
+    <div style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
+        <div class="form-group" style="margin:0;">
+            <label for="period-from"><?= th('finance.from') ?></label>
+            <input class="form-control" type="date" id="period-from" name="from" value="<?= htmlspecialchars($periodFrom) ?>" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+            <label for="period-to"><?= th('finance.to') ?></label>
+            <input class="form-control" type="date" id="period-to" name="to" value="<?= htmlspecialchars($periodTo) ?>" required>
+        </div>
+        <button class="btn btn-primary" type="submit"><?= th('finance.filter_btn') ?></button>
+        <span class="text-xs text-faint"><?= htmlspecialchars($periodLabel) ?></span>
+    </div>
+</form>
+
 <!-- Score + prévisions -->
 <div class="panel panel-static" style="margin-bottom:16px; padding:14px 20px;">
     <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
@@ -34,25 +50,25 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 
     <div class="panel kpi-panel">
         <div class="flex-between">
-            <h3><?= th('dashboard.income_month') ?></h3>
+            <h3><?= th('dashboard.income_period') ?></h3>
             <div class="panel-icon green">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
             </div>
         </div>
         <div class="kpi-value income"><?= number_format($income, 0, ',', ' ') ?> <?= $cur ?></div>
-        <div class="kpi-sub"><?= th('dashboard.since_first') ?></div>
+        <div class="kpi-sub"><?= htmlspecialchars($periodLabel) ?></div>
         <div class="kpi-sparkline income" aria-hidden="true"></div>
     </div>
 
     <div class="panel kpi-panel">
         <div class="flex-between">
-            <h3><?= th('dashboard.expense_month') ?></h3>
+            <h3><?= th('dashboard.expense_period') ?></h3>
             <div class="panel-icon red">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
             </div>
         </div>
         <div class="kpi-value expense"><?= number_format($expense, 0, ',', ' ') ?> <?= $cur ?></div>
-        <div class="kpi-sub"><?= th('dashboard.since_first') ?></div>
+        <div class="kpi-sub"><?= htmlspecialchars($periodLabel) ?></div>
         <div class="kpi-sparkline expense" aria-hidden="true"></div>
     </div>
 
@@ -104,8 +120,8 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
         </form>
         <?php if ($monthlyTarget > 0): ?>
         <div class="monthly-goal-stats">
-            <div><span><?= th('dashboard.monthly_actual') ?></span><strong><?= number_format($balance, 0, ',', ' ') ?> <?= $cur ?></strong></div>
-            <div><span><?= th('dashboard.remaining') ?></span><strong><?= number_format(max(0, $monthlyTarget - max(0, $balance)), 0, ',', ' ') ?> <?= $cur ?></strong></div>
+        <div><span><?= th('dashboard.monthly_actual') ?></span><strong><?= number_format($monthlyBalance, 0, ',', ' ') ?> <?= $cur ?></strong></div>
+        <div><span><?= th('dashboard.remaining') ?></span><strong><?= number_format(max(0, $monthlyTarget - max(0, $monthlyBalance)), 0, ',', ' ') ?> <?= $cur ?></strong></div>
         </div>
         <div class="progress-track monthly-goal-track"><div class="progress-fill" data-width="<?= $monthlyProgress ?>" style="width:0;background:var(--cyan);"></div></div>
         <div class="monthly-goal-percent"><?= $monthlyProgress ?>% <?= $monthlyProgress >= 100 ? '• ' . th('dashboard.goal_reached') : '' ?></div>
@@ -113,7 +129,7 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
     </section>
 
     <section class="panel panel-static expense-ranking-panel">
-        <div class="panel-title-row"><div class="section-title"><?= th('dashboard.expense_ranking') ?></div><span class="dashboard-month-chip"><?= date('m/Y') ?></span></div>
+        <div class="panel-title-row"><div class="section-title"><?= th('dashboard.expense_ranking') ?></div><span class="dashboard-month-chip"><?= htmlspecialchars($periodLabel) ?></span></div>
         <?php if (empty($expenseRanking)): ?>
             <div class="empty-state"><?= th('dashboard.no_ranking') ?></div>
         <?php else: $rankMax = max(array_map(fn($row) => (float)$row['total'], $expenseRanking)); ?>
@@ -142,26 +158,13 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 
     <div class="panel panel-static" style="grid-column:span 2;">
         <div class="panel-title-row">
-            <div class="section-title" id="chart-period-label">
-                <?= th('dashboard.evolution') ?> — <?= $months ?> <?= $months === 1 ? 'mois' : 'mois' ?>
-            </div>
+            <div class="section-title"><?= th('dashboard.evolution') ?> — <?= htmlspecialchars($periodLabel) ?></div>
             <div style="display:flex; align-items:center; gap:8px;">
-                <div class="period-selector" role="group">
-                    <?php foreach ([1=>'1M', 3=>'3M', 6=>'6M', 12=>'12M'] as $m => $label): ?>
-                    <button class="period-btn <?= $months === $m ? 'active' : '' ?>"
-                            data-months="<?= $m ?>" aria-pressed="<?= $months === $m ? 'true' : 'false' ?>">
-                        <?= $label ?>
-                    </button>
-                    <?php endforeach; ?>
-                </div>
-                <a href="index.php?page=analytics" class="btn btn-sm"><?= th('dashboard.full_analysis') ?></a>
+                <a href="index.php?page=analytics&amp;from=<?= urlencode($periodFrom) ?>&amp;to=<?= urlencode($periodTo) ?>" class="btn btn-sm"><?= th('dashboard.full_analysis') ?></a>
             </div>
         </div>
         <div class="chart-wrap" style="height:220px; position:relative;">
             <canvas id="chart-evolution"></canvas>
-            <div id="chart-loading" style="display:none; position:absolute; inset:0; align-items:center; justify-content:center; background:rgba(15,20,32,0.7); border-radius:var(--radius); z-index:2;">
-                <span style="color:var(--cyan); font-family:var(--font-mono); font-size:12px; letter-spacing:1px;"><?= th('dashboard.loading') ?></span>
-            </div>
         </div>
     </div>
 
@@ -314,10 +317,6 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 .priority-dot.priority-low    { background:var(--success); }
 .goal-item { padding:8px 0;border-bottom:1px solid var(--border-faint); }
 .goal-item:last-child { border-bottom:none; }
-.period-selector { display:flex;gap:3px;background:rgba(255,255,255,0.04);border:1px solid var(--border-faint);border-radius:var(--radius-sm);padding:3px; }
-.period-btn { padding:4px 10px;border-radius:6px;border:none;background:transparent;color:var(--text-faint);font-size:11px;font-weight:600;font-family:var(--font-mono);cursor:pointer;transition:all .18s ease;letter-spacing:.5px; }
-.period-btn:hover  { color:var(--text-main);background:rgba(255,255,255,0.06); }
-.period-btn.active { background:var(--cyan-glow);color:var(--cyan);border:1px solid var(--border-mid); }
 .dashboard-focus-grid { align-items:stretch; }
 .monthly-goal-panel,.expense-ranking-panel,.quick-actions-panel { border-top:2px solid var(--compass-silver); }
 .dashboard-muted { color:var(--text-dim);font-size:12px;margin:0 0 14px; }
@@ -365,7 +364,7 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
         const months  = [...new Set(raw.map(r => r.ym))].sort();
         const income  = months.map(m => { const r = raw.find(x => x.ym===m && x.type==='income');  return r ? parseFloat(r.total) : 0; });
         const expense = months.map(m => { const r = raw.find(x => x.ym===m && x.type==='expense'); return r ? parseFloat(r.total) : 0; });
-        const labels  = months.map(m => { const [,mo] = m.split('-'); return MONTH_NAMES[parseInt(mo,10)-1] ?? m; });
+        const labels  = months.map(m => { const [year,mo] = m.split('-'); return `${MONTH_NAMES[parseInt(mo,10)-1] ?? m} ${year}`; });
         return { labels, income, expense };
     }
 
@@ -400,26 +399,5 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
         options: chartOptions,
     });
 
-    document.querySelectorAll('.period-btn').forEach(btn => {
-        btn.addEventListener('click', async function () {
-            const mo      = this.dataset.months;
-            const loading = document.getElementById('chart-loading');
-            document.querySelectorAll('.period-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed','false'); });
-            this.classList.add('active'); this.setAttribute('aria-pressed','true');
-            document.getElementById('chart-period-label').textContent = '<?= th('dashboard.evolution') ?> — ' + mo + ' mois';
-            loading.style.display = 'flex';
-            try {
-                const res = await NEXUS.get(`index.php?page=dashboard&action=series&months=${mo}`);
-                if (res.success) {
-                    const d = buildChartData(res.series);
-                    chart.data.labels          = d.labels;
-                    chart.data.datasets[0].data = d.income;
-                    chart.data.datasets[1].data = d.expense;
-                    chart.update('active');
-                }
-            } catch(e) { NEXUS.toast('<?= th('common.error') ?>', 'error'); }
-            finally   { loading.style.display = 'none'; }
-        });
-    });
 })();
 </script>

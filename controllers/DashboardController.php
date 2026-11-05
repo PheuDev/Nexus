@@ -18,24 +18,26 @@ class DashboardController
 
         $firstOfMonth = date('Y-m-01');
         $today        = date('Y-m-d');
+        [$from, $to]  = nexus_date_period($firstOfMonth, $today);
 
-        $totals      = Transaction::totalsForPeriod($userId, $firstOfMonth, $today);
+        $totals      = Transaction::totalsForPeriod($userId, $from, $to);
         $income      = $totals['income'];
         $expense     = $totals['expense'];
         $balance     = $income - $expense;
         $savingsRate = $income > 0 ? round((($income - $expense) / $income) * 100, 1) : 0;
         $monthlyTarget = MonthlyTarget::forMonth($userId, date('Y-m'));
-        $monthlyProgress = $monthlyTarget > 0 ? min(100, max(0, round(($balance / $monthlyTarget) * 100))) : 0;
-        $expenseRanking = Transaction::expenseRanking($userId, $firstOfMonth, $today);
+        $monthTotals = Transaction::totalsForPeriod($userId, $firstOfMonth, $today);
+        $monthlyBalance = $monthTotals['income'] - $monthTotals['expense'];
+        $monthlyProgress = $monthlyTarget > 0 ? min(100, max(0, round(($monthlyBalance / $monthlyTarget) * 100))) : 0;
+        $expenseRanking = Transaction::expenseRanking($userId, $from, $to);
 
         $goals        = Goal::allForUser($userId);
         $activeGoals  = array_filter($goals, fn($g) => $g['status'] === 'active');
-        $recentTx     = Transaction::allForUser($userId, ['limit' => 6]);
+        $recentTx     = Transaction::allForUser($userId, ['from' => $from, 'to' => $to, 'limit' => 6]);
         $todayTasks   = Task::todayForUser($userId);
         $pendingCount = Task::countPending($userId);
 
-        $months = $this->sanitizeMonths($_GET['months'] ?? 6);
-        $series = Transaction::monthlySeries($userId, $months);
+        $series = Transaction::monthlySeriesForPeriod($userId, $from, $to);
 
         // #9 Prévisions basées sur les 3 derniers mois
         $forecast = Transaction::forecast($userId, 3);
@@ -50,9 +52,13 @@ class DashboardController
 
         render('dashboard', [
             'title'         => t('dashboard.title'),
+            'periodFrom'    => $from,
+            'periodTo'      => $to,
+            'periodLabel'   => date('d/m/Y', strtotime($from)) . ' – ' . date('d/m/Y', strtotime($to)),
             'income'        => $income,
             'expense'       => $expense,
             'balance'       => $balance,
+            'monthlyBalance' => $monthlyBalance,
             'savingsRate'   => $savingsRate,
             'goals'         => $goals,
             'activeGoals'   => $activeGoals,
@@ -60,7 +66,6 @@ class DashboardController
             'todayTasks'    => $todayTasks,
             'pendingCount'  => $pendingCount,
             'series'        => $series,
-            'months'        => $months,
             'insights'      => $insights,
             'forecast'      => $forecast,
             'score'         => $score,
@@ -136,11 +141,11 @@ class DashboardController
         $insights = [];
 
         if ($income > 0 && $expense > $income) {
-            $insights[] = ['type' => 'alert', 'text' => 'Vos dépenses dépassent vos revenus ce mois-ci.'];
+            $insights[] = ['type' => 'alert', 'text' => t('dashboard.period_warning')];
         } elseif ($savingsRate >= 30) {
-            $insights[] = ['type' => 'success', 'text' => "Excellent taux d'épargne : {$savingsRate}% ce mois-ci."];
+            $insights[] = ['type' => 'success', 'text' => t('dashboard.period_savings', ['{rate}' => $savingsRate])];
         } elseif ($income > 0) {
-            $insights[] = ['type' => 'info', 'text' => "Taux d'épargne actuel : {$savingsRate}%."];
+            $insights[] = ['type' => 'info', 'text' => t('dashboard.period_savings', ['{rate}' => $savingsRate])];
         }
 
         // Alerte budgets dépassés

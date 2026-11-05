@@ -146,6 +146,27 @@ function is_valid_email(string $email): bool
     return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
 }
 
+/** Retourne une période GET valide, ou la période par défaut si les dates sont invalides. */
+function nexus_date_period(string $defaultFrom, string $defaultTo): array
+{
+    $from = isset($_GET['from']) && is_string($_GET['from']) ? $_GET['from'] : $defaultFrom;
+    $to   = isset($_GET['to']) && is_string($_GET['to']) ? $_GET['to'] : $defaultTo;
+
+    $isValidDate = static function (string $value): bool {
+        $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        $errors = DateTimeImmutable::getLastErrors();
+        return $date !== false
+            && $date->format('Y-m-d') === $value
+            && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0));
+    };
+
+    if (!$isValidDate($from) || !$isValidDate($to) || $from > $to) {
+        return [$defaultFrom, $defaultTo];
+    }
+
+    return [$from, $to];
+}
+
 /** Symbole affiché pour une devise donnée (suffixe, ex: "1 000 F CFA"). */
 function currency_symbol(string $code): string
 {

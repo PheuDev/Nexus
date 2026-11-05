@@ -15,6 +15,22 @@ function variationBadge(?float $v, bool $invertGood = false): string {
 }
 ?>
 
+<form method="get" action="index.php" class="panel panel-static" style="margin-bottom:16px;">
+    <input type="hidden" name="page" value="analytics">
+    <div style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
+        <div class="form-group" style="margin:0;">
+            <label for="period-from"><?= th('finance.from') ?></label>
+            <input class="form-control" type="date" id="period-from" name="from" value="<?= htmlspecialchars($periodFrom) ?>" required>
+        </div>
+        <div class="form-group" style="margin:0;">
+            <label for="period-to"><?= th('finance.to') ?></label>
+            <input class="form-control" type="date" id="period-to" name="to" value="<?= htmlspecialchars($periodTo) ?>" required>
+        </div>
+        <button class="btn btn-primary" type="submit"><?= th('finance.filter_btn') ?></button>
+        <span class="text-xs text-faint"><?= htmlspecialchars($periodFrom) ?> – <?= htmlspecialchars($periodTo) ?></span>
+    </div>
+</form>
+
 <div class="grid grid-3">
     <div class="panel">
         <div class="flex-between">
@@ -25,7 +41,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
         </div>
         <div class="kpi-value savings"><?= $savingsRateCurrent ?>%</div>
         <?= variationBadge(is_numeric($savingsVar) ? (float)$savingsVar : null) ?>
-        <div class="kpi-sub"><?= th('analytics.prev_month') ?> <?= $savingsRatePrevious ?>%</div>
+        <div class="kpi-sub"><?= th('analytics.previous_period') ?> <?= htmlspecialchars($previousFrom) ?> – <?= htmlspecialchars($previousTo) ?>: <?= $savingsRatePrevious ?>%</div>
     </div>
     <div class="panel">
         <div class="flex-between">
@@ -36,7 +52,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
         </div>
         <div class="kpi-value income"><?= number_format($current['income'],0,',',' ') ?> <?= $cur ?></div>
         <?= variationBadge($incomeVar) ?>
-        <div class="kpi-sub"><?= th('analytics.prev_month') ?> <?= number_format($previous['income'],0,',',' ') ?> <?= $cur ?></div>
+        <div class="kpi-sub"><?= th('analytics.previous_period') ?> <?= htmlspecialchars($previousFrom) ?> – <?= htmlspecialchars($previousTo) ?>: <?= number_format($previous['income'],0,',',' ') ?> <?= $cur ?></div>
     </div>
     <div class="panel">
         <div class="flex-between">
@@ -47,19 +63,19 @@ function variationBadge(?float $v, bool $invertGood = false): string {
         </div>
         <div class="kpi-value expense"><?= number_format($current['expense'],0,',',' ') ?> <?= $cur ?></div>
         <?= variationBadge($expenseVar, true) ?>
-        <div class="kpi-sub"><?= th('analytics.prev_month') ?> <?= number_format($previous['expense'],0,',',' ') ?> <?= $cur ?></div>
+        <div class="kpi-sub"><?= th('analytics.previous_period') ?> <?= htmlspecialchars($previousFrom) ?> – <?= htmlspecialchars($previousTo) ?>: <?= number_format($previous['expense'],0,',',' ') ?> <?= $cur ?></div>
     </div>
 </div>
 
 <div class="grid grid-2 mt-16">
     <div class="panel panel-static">
-        <div class="panel-title-row"><div class="section-title"><?= th('analytics.evolution') ?></div></div>
+        <div class="panel-title-row"><div class="section-title"><?= th('analytics.evolution') ?></div><span class="text-xs text-faint"><?= htmlspecialchars($periodFrom) ?> – <?= htmlspecialchars($periodTo) ?></span></div>
         <div class="chart-wrap chart-wrap-lg"><canvas id="chart-evo"></canvas></div>
     </div>
     <div class="panel panel-static">
         <div class="panel-title-row">
             <div class="section-title"><?= th('analytics.breakdown') ?></div>
-            <span class="text-xs text-faint"><?= th('analytics.current_month') ?></span>
+            <span class="text-xs text-faint"><?= htmlspecialchars($periodFrom) ?> – <?= htmlspecialchars($periodTo) ?></span>
         </div>
         <?php if (empty($expenseByCat)): ?>
             <div class="empty-state"><div class="empty-state-icon">📊</div><?= th('analytics.no_expense_cat') ?></div>
@@ -76,7 +92,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     const months = [...new Set(raw.map(r=>r.ym))].sort();
     const income  = months.map(m=>{ const r=raw.find(x=>x.ym===m&&x.type==='income');  return r?parseFloat(r.total):0; });
     const expense = months.map(m=>{ const r=raw.find(x=>x.ym===m&&x.type==='expense'); return r?parseFloat(r.total):0; });
-    const labels  = months.map(m=>{ const[,mo]=m.split('-'); return MONTH_NAMES[parseInt(mo,10)-1]??m; });
+    const labels  = months.map(m=>{ const[year,mo]=m.split('-'); return `${MONTH_NAMES[parseInt(mo,10)-1]??m} ${year}`; });
 
     const isDark  = document.documentElement.getAttribute('data-theme')!=='light';
     const tc      = isDark?'#4a5268':'#7a8499';

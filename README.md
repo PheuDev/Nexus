@@ -13,14 +13,14 @@ NEXUS est une application web PHP/PostgreSQL de suivi personnel : finances, obje
 
 ## Aperçu
 
-- **Dashboard** — Score financier, KPIs, prévisions mois suivant, graphique évolution multi-période (1M/3M/6M/12M), objectifs, tâches du jour, transactions récentes
+- **Dashboard** — Score financier, KPIs filtrables par dates, prévisions mois suivant, graphique d'évolution sur la période choisie, objectifs, tâches du jour, transactions récentes
 - **Finances** — CRUD transactions paginées, récurrences automatiques, notes, export CSV, gestion catégories complète
 - **Budgets** — Budget mensuel par catégorie avec suivi visuel (barres de progression, alertes dépassement)
 - **Objectifs** — Épargne progressive avec dépôts, barres animées, passage automatique en "atteint"
 - **Planning** — Tâches avec priorités, filtres, badge compteur dans la nav
-- **Analyse** — Graphiques barres + doughnut, comparaison mois courant vs précédent, variations
+- **Analyse** — Graphiques barres + doughnut, comparaison avec la période précédente de même durée, filtre de dates
 - **Historique** — Journal complet de toutes les actions (créations, modifications, suppressions, connexions)
-- **Paramètres** — Thème dark/light (switch topbar), devise avec conversion de taux réels, langue (FR/EN/ES)
+- **Paramètres** — Thème dark/light (switch topbar), devise avec conversion de tous les montants du compte, langue (FR/EN/ES)
 - **Auth** — Inscription/connexion AJAX, anti brute-force, reset mot de passe par email, sessions sécurisées CSRF
 
 ---
