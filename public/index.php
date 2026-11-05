@@ -37,7 +37,7 @@ $routes = [
     'finances' => [
         'GET'                   => fn() => (new FinanceController())->index(),
         'GET:list'              => fn() => (new FinanceController())->list(),
-        'GET:export'            => fn() => (new FinanceController())->exportCsv(),
+        'GET:export'            => fn() => (new FinanceController())->exportPdf(),
         'POST:store'            => fn() => (new FinanceController())->store(),
         'POST:update'           => fn() => (new FinanceController())->update(),
         'POST:destroy'          => fn() => (new FinanceController())->destroy(),

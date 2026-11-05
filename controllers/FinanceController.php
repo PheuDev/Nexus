@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../models/Transaction.php';
 require_once __DIR__ . '/../models/ActivityLog.php';
+require_once __DIR__ . '/../core/pdf.php';
 
 class FinanceController
 {
@@ -124,47 +125,59 @@ class FinanceController
     }
 
     // ----------------------------------------------------------
-    // EXPORT CSV
+    // EXPORT PDF
     // ----------------------------------------------------------
 
-    public function exportCsv(): void
+    public function exportPdf(): void
     {
         require_login();
         $userId = current_user_id();
 
+        $requestedType = isset($_GET['type']) && is_string($_GET['type']) ? $_GET['type'] : '';
+        $requestedFrom = isset($_GET['from']) && is_string($_GET['from']) ? $_GET['from'] : date('Y-m-01');
+        $requestedTo = isset($_GET['to']) && is_string($_GET['to']) ? $_GET['to'] : date('Y-m-d');
+        [$from, $to] = nexus_date_period($requestedFrom, $requestedTo);
         $filters = [
-            'type'        => clean_str($_GET['type'] ?? ''),
-            'category_id' => (int)($_GET['category_id'] ?? 0),
-            'search'      => clean_str($_GET['q'] ?? ''),
-            'from'        => clean_str($_GET['from'] ?? date('Y-m-01')),
-            'to'          => clean_str($_GET['to']   ?? date('Y-m-d')),
+            'type'        => in_array($requestedType, ['income', 'expense'], true) ? $requestedType : '',
+            'category_id' => isset($_GET['category_id']) && is_scalar($_GET['category_id']) ? (int)$_GET['category_id'] : 0,
+            'search'      => isset($_GET['q']) && is_string($_GET['q']) ? clean_str($_GET['q']) : '',
+            'from'        => $from,
+            'to'          => $to,
         ];
 
         $rows = Transaction::allForUser($userId, $filters);
-
         $cur = currency_symbol($_SESSION['user_currency'] ?? 'EUR');
+        $pdf = nexus_transactions_pdf(
+            $rows,
+            [
+                'title' => t('finance.pdf_title'),
+                'generated_by' => t('finance.pdf_generated_by'),
+                'income_label' => t('finance.pdf_income'),
+                'expense_label' => t('finance.pdf_expense'),
+                'net_label' => t('finance.pdf_net'),
+                'transactions' => t('finance.pdf_transactions'),
+                'date_label' => t('finance.date'),
+                'label_label' => t('finance.label'),
+                'category_label' => t('finance.category'),
+                'type_label' => t('finance.type'),
+                'amount_label' => t('finance.amount'),
+                'income_type' => t('finance.income'),
+                'expense_type' => t('finance.expense'),
+                'no_category' => t('finance.no_category'),
+                'empty' => t('finance.pdf_empty'),
+                'footer' => t('finance.pdf_footer'),
+            ],
+            $cur,
+            $from,
+            $to,
+            $_SESSION['user_name'] ?? ''
+        );
 
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="nexus-transactions-' . date('Y-m-d') . '.csv"');
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="nexus-transactions-' . date('Y-m-d') . '.pdf"');
         header('Cache-Control: no-cache');
-
-        $out = fopen('php://output', 'w');
-        // BOM UTF-8 pour Excel
-        fwrite($out, "\xEF\xBB\xBF");
-        fputcsv($out, ['Date', 'Libellé', 'Type', 'Catégorie', 'Montant (' . $cur . ')', 'Récurrence', 'Note'], ';');
-
-        foreach ($rows as $t) {
-            fputcsv($out, [
-                $t['occurred_on'],
-                $t['label'],
-                $t['type'] === 'income' ? 'Revenu' : 'Dépense',
-                $t['category_name'] ?? '',
-                number_format($t['amount'], 2, ',', ' '),
-                $t['recurrence'] ?? 'none',
-                $t['note'] ?? '',
-            ], ';');
-        }
-        fclose($out);
+        header('Content-Length: ' . strlen($pdf));
+        echo $pdf;
         exit;
     }
 

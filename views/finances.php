@@ -7,10 +7,10 @@ $p   = $pagination;
     <div class="panel-title-row">
         <div class="section-title"><?= th('finance.filters') ?></div>
         <div style="display:flex;gap:8px;">
-            <a href="index.php?page=finances&action=export&type=<?= urlencode($filters['type']) ?>&from=<?= urlencode($filters['from']) ?>&to=<?= urlencode($filters['to']) ?>"
-               class="btn btn-sm export-btn" title="<?= th('finance.csv_btn') ?>">
+            <a href="index.php?page=finances&amp;action=export&amp;type=<?= urlencode($filters['type']) ?>&amp;q=<?= urlencode($filters['search']) ?>&amp;category_id=<?= (int)$filters['category_id'] ?>&amp;from=<?= urlencode($filters['from']) ?>&amp;to=<?= urlencode($filters['to']) ?>"
+               class="btn btn-sm export-btn" title="<?= th('finance.pdf_btn') ?>">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <?= th('finance.csv_btn') ?>
+                <?= th('finance.pdf_btn') ?>
             </a>
             <button class="btn btn-sm" onclick="openCatPanel()">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="13" height="13"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
