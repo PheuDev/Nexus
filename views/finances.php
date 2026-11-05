@@ -63,7 +63,7 @@ $p   = $pagination;
             <button class="btn btn-sm btn-primary" onclick="openTxForm()" style="margin-top:12px;"><?= th('finance.add_first') ?></button>
         </div>
     <?php else: ?>
-    <div style="overflow-x:auto;">
+    <div class="table-scroll">
         <table class="nexus-table">
             <thead><tr>
                 <th><?= th('finance.date') ?></th>
@@ -235,9 +235,9 @@ $p   = $pagination;
                     <div class="form-group">
                         <label><?= th('finance.cat_color') ?></label>
                         <div style="display:flex;align-items:center;gap:8px;">
-                            <input type="color" name="color" id="cat-color" value="#00d9ff"
+                            <input type="color" name="color" id="cat-color" value="#79d6c1"
                                    style="width:40px;height:38px;border:1px solid var(--border-soft);border-radius:var(--radius-sm);background:var(--bg-input);cursor:pointer;padding:2px;">
-                            <span id="cat-color-preview" style="font-family:var(--font-mono);font-size:11px;color:var(--text-faint);">#00d9ff</span>
+                            <span id="cat-color-preview" style="font-family:var(--font-mono);font-size:11px;color:var(--text-faint);">#79d6c1</span>
                         </div>
                     </div>
                 </div>
@@ -357,16 +357,16 @@ function resetCatForm(){
     document.getElementById('cat-id').value='';
     document.getElementById('cat-form-title').textContent=_t.catNew;
     document.getElementById('cat-cancel-btn').style.display='none';
-    document.getElementById('cat-color-preview').textContent='#00d9ff';
+    document.getElementById('cat-color-preview').textContent='#79d6c1';
     document.getElementById('cat-color-preview').style.color='';
 }
 function editCat(cat){
     document.getElementById('cat-id').value=cat.id;
     document.getElementById('cat-name').value=cat.name;
     document.getElementById('cat-type').value=cat.type;
-    document.getElementById('cat-color').value=cat.color||'#00d9ff';
-    document.getElementById('cat-color-preview').textContent=cat.color||'#00d9ff';
-    document.getElementById('cat-color-preview').style.color=cat.color||'#00d9ff';
+    document.getElementById('cat-color').value=cat.color||'#79d6c1';
+    document.getElementById('cat-color-preview').textContent=cat.color||'#79d6c1';
+    document.getElementById('cat-color-preview').style.color=cat.color||'#79d6c1';
     document.getElementById('cat-form-title').textContent=_t.catEdit;
     document.getElementById('cat-cancel-btn').style.display='block';
     document.getElementById('cat-name').focus();

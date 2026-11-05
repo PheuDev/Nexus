@@ -15,7 +15,7 @@ function variationBadge(?float $v, bool $invertGood = false): string {
 }
 ?>
 
-<form method="get" action="index.php" class="panel panel-static" style="margin-bottom:16px;">
+<form method="get" action="index.php" class="panel panel-static period-filter-panel" style="margin-bottom:16px;">
     <input type="hidden" name="page" value="analytics">
     <div style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
         <div class="form-group" style="margin:0;">
@@ -109,16 +109,17 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     const labels  = months.map(m=>{ const[year,mo]=m.split('-'); return `${MONTH_NAMES[parseInt(mo,10)-1]??m} ${year}`; });
 
     const isDark  = document.documentElement.getAttribute('data-theme')!=='light';
-    const tc      = isDark?'#4a5268':'#7a8499';
-    const gc      = isDark?'rgba(255,255,255,0.025)':'rgba(0,0,0,0.06)';
-    const tbg     = isDark?'#0f1420':'#ffffff';
-    const def     = { plugins:{ legend:{labels:{color:tc,font:{family:'Inter',size:12},boxWidth:12,padding:16}}, tooltip:{backgroundColor:tbg,borderColor:'rgba(0,217,255,0.25)',borderWidth:1,titleColor:isDark?'#dde4f0':'#1a1f2e',bodyColor:tc,padding:12} }, scales:{ x:{ticks:{color:tc,font:{size:11}},grid:{color:gc}}, y:{ticks:{color:tc,font:{size:11}},grid:{color:gc}} } };
+    const tc      = isDark?'#aab9b1':'#708276';
+    const gc      = isDark?'rgba(220,235,226,0.07)':'rgba(48,77,64,0.1)';
+    const tbg     = isDark?'#202d28':'#ffffff';
+    const tooltip = isDark?'rgba(121,214,193,0.3)':'rgba(45,139,119,0.3)';
+    const def     = { plugins:{ legend:{labels:{color:tc,font:{family:'Inter',size:12},boxWidth:12,padding:16}}, tooltip:{backgroundColor:tbg,borderColor:tooltip,borderWidth:1,titleColor:isDark?'#f3f7f4':'#15251d',bodyColor:tc,padding:12} }, scales:{ x:{ticks:{color:tc,font:{size:11}},grid:{color:gc}}, y:{ticks:{color:tc,font:{size:11}},grid:{color:gc}} } };
 
     new Chart(document.getElementById('chart-evo'),{
         type:'bar',
         data:{ labels, datasets:[
-            {label:'<?= th('common.income') ?>',  data:income,  backgroundColor:'rgba(61,220,151,0.55)',borderColor:'rgba(61,220,151,0.8)',borderWidth:1,borderRadius:4},
-            {label:'<?= th('common.expense') ?>', data:expense, backgroundColor:'rgba(255,95,109,0.55)',borderColor:'rgba(255,95,109,0.8)',borderWidth:1,borderRadius:4},
+            {label:'<?= th('common.income') ?>',  data:income,  backgroundColor:'rgba(115,201,161,0.55)',borderColor:'rgba(115,201,161,0.8)',borderWidth:1,borderRadius:4},
+            {label:'<?= th('common.expense') ?>', data:expense, backgroundColor:'rgba(223,137,129,0.55)',borderColor:'rgba(223,137,129,0.8)',borderWidth:1,borderRadius:4},
         ]},
         options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},...def},
     });
@@ -127,11 +128,11 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     if(cats.length>0){
         new Chart(document.getElementById('chart-cat'),{
             type:'doughnut',
-            data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>parseFloat(c.total)),backgroundColor:cats.map(c=>c.color||'#5b8cff'),borderWidth:2,borderColor:isDark?'#0f1420':'#ffffff',hoverOffset:8}]},
+            data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>parseFloat(c.total)),backgroundColor:cats.map(c=>c.color||'#79d6c1'),borderWidth:2,borderColor:isDark?'#18221f':'#ffffff',hoverOffset:8}]},
             options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
                 plugins:{
                     legend:{position:'bottom',labels:{color:tc,font:{family:'Inter',size:11},padding:14,boxWidth:10}},
-                    tooltip:{backgroundColor:tbg,borderColor:'rgba(0,217,255,0.25)',borderWidth:1,titleColor:isDark?'#dde4f0':'#1a1f2e',bodyColor:tc,padding:12,
+                    tooltip:{backgroundColor:tbg,borderColor:tooltip,borderWidth:1,titleColor:isDark?'#f3f7f4':'#15251d',bodyColor:tc,padding:12,
                         callbacks:{label:ctx=>' '+ctx.label+' : '+ctx.parsed.toLocaleString('<?= nexus_locale() ?>')+' <?= $cur ?>'}},
                 }
             },

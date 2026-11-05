@@ -6,7 +6,7 @@ $scoreColor = $score >= 70 ? 'var(--success)' : ($score >= 40 ? 'var(--warning)'
 $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('dashboard.score_ok') : t('dashboard.score_bad'));
 ?>
 
-<form method="get" action="index.php" class="panel panel-static" style="margin-bottom:16px;">
+<form method="get" action="index.php" class="panel panel-static period-filter-panel" style="margin-bottom:16px;">
     <input type="hidden" name="page" value="dashboard">
     <div style="display:flex;align-items:end;gap:12px;flex-wrap:wrap;">
         <div class="form-group" style="margin:0;">
@@ -45,7 +45,7 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 </div>
 
 <!-- KPIs -->
-<div class="grid grid-4">
+<div class="grid grid-4 dashboard-kpi-grid">
 
     <div class="panel kpi-panel">
         <div class="flex-between">
@@ -223,7 +223,7 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
             <a href="index.php?page=planning" class="btn btn-sm"><?= th('dashboard.planning') ?></a>
         </div>
         <?php if ($pendingCount > 0): ?>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:var(--radius-sm);background:rgba(0,217,255,0.04);border:1px solid var(--border-faint);margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-radius:var(--radius-sm);background:var(--cyan-glow);border:1px solid var(--border-faint);margin-bottom:12px;">
             <span style="font-size:11px;color:var(--text-dim);"><?= th('dashboard.pending_total') ?></span>
             <span style="font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--cyan);background:var(--cyan-glow);padding:2px 10px;border-radius:var(--radius-pill);border:1px solid var(--border-mid);"><?= $pendingCount ?></span>
         </div>

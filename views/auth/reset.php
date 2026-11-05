@@ -23,7 +23,7 @@
     <div class="auth-card" role="main">
         <div class="auth-logo">
             <div class="auth-logo-ring" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="rgba(0,217,255,0.9)" stroke-width="1.5" stroke-linecap="round" width="22" height="22">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="1.5" stroke-linecap="round" width="22" height="22">
                     <circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/>
                     <path d="M12 3v2M12 19v2M3 12h2M19 12h2" opacity=".5"/>
                 </svg>
