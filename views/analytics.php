@@ -26,7 +26,6 @@ function variationBadge(?float $v, bool $invertGood = false): string {
             <label for="period-to"><?= th('finance.to') ?></label>
             <input class="form-control" type="date" id="period-to" name="to" value="<?= htmlspecialchars($periodTo) ?>" required>
         </div>
-        <button class="btn btn-primary" type="submit"><?= th('finance.filter_btn') ?></button>
         <span class="text-xs text-faint"><?= htmlspecialchars($periodFrom) ?> – <?= htmlspecialchars($periodTo) ?></span>
     </div>
 </form>
@@ -87,6 +86,21 @@ function variationBadge(?float $v, bool $invertGood = false): string {
 
 <script>
 (function () {
+    const periodForm = document.querySelector('form[action="index.php"] input[name="page"][value="analytics"]')?.form;
+    const periodFrom = periodForm?.querySelector('input[name="from"]');
+    const periodTo = periodForm?.querySelector('input[name="to"]');
+    if (periodForm && periodFrom && periodTo) {
+        const syncDateBounds = () => {
+            periodFrom.max = periodTo.value;
+            periodTo.min = periodFrom.value;
+        };
+        syncDateBounds();
+        [periodFrom, periodTo].forEach(input => input.addEventListener('change', () => {
+            syncDateBounds();
+            if (periodForm.reportValidity()) periodForm.requestSubmit();
+        }));
+    }
+
     const MONTH_NAMES = <?= json_encode(t('months')) ?>;
     const raw    = <?= json_encode($series) ?>;
     const months = [...new Set(raw.map(r=>r.ym))].sort();

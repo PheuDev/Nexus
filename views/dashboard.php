@@ -17,7 +17,6 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
             <label for="period-to"><?= th('finance.to') ?></label>
             <input class="form-control" type="date" id="period-to" name="to" value="<?= htmlspecialchars($periodTo) ?>" required>
         </div>
-        <button class="btn btn-primary" type="submit"><?= th('finance.filter_btn') ?></button>
         <span class="text-xs text-faint"><?= htmlspecialchars($periodLabel) ?></span>
     </div>
 </form>
@@ -350,6 +349,21 @@ $scoreLabel = $score >= 70 ? t('dashboard.score_great') : ($score >= 40 ? t('das
 
 <script>
 (function () {
+    const periodForm = document.querySelector('form[action="index.php"] input[name="page"][value="dashboard"]')?.form;
+    const periodFrom = periodForm?.querySelector('input[name="from"]');
+    const periodTo = periodForm?.querySelector('input[name="to"]');
+    if (periodForm && periodFrom && periodTo) {
+        const syncDateBounds = () => {
+            periodFrom.max = periodTo.value;
+            periodTo.min = periodFrom.value;
+        };
+        syncDateBounds();
+        [periodFrom, periodTo].forEach(input => input.addEventListener('change', () => {
+            syncDateBounds();
+            if (periodForm.reportValidity()) periodForm.requestSubmit();
+        }));
+    }
+
     document.getElementById('monthly-target-form')?.addEventListener('submit', async function (event) {
         event.preventDefault();
         const data = Object.fromEntries(new FormData(this));
