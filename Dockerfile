@@ -11,7 +11,8 @@ RUN sed -ri 's!/var/www/html!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-avail
 
 COPY . /var/www/html
 COPY docker-entrypoint.sh /usr/local/bin/nexus-entrypoint
-RUN chmod +x /usr/local/bin/nexus-entrypoint \
+RUN cp /var/www/html/config/config.example.php /var/www/html/config/config.php \
+    && chmod +x /usr/local/bin/nexus-entrypoint \
     && chown -R www-data:www-data /var/www/html
 
 EXPOSE 80
