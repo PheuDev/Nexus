@@ -24,10 +24,6 @@
                 <option value="low"    <?= $filters['priority']==='low'   ?'selected':'' ?>><?= th('planning.low') ?></option>
             </select>
         </div>
-        <div class="form-group mb-0" style="flex:0;">
-            <label style="visibility:hidden;">Go</label>
-            <button type="submit" class="btn btn-sm"><?= th('planning.filter_btn') ?></button>
-        </div>
     </form>
 </div>
 
@@ -149,5 +145,8 @@ document.getElementById('filter-form').addEventListener('submit',(e)=>{
     e.preventDefault();
     const params=new URLSearchParams(new FormData(e.target));
     window.location.href='index.php?page=planning&'+params.toString();
+});
+document.getElementById('filter-form').querySelectorAll('select').forEach(input => {
+    input.addEventListener('change', () => document.getElementById('filter-form').requestSubmit());
 });
 </script>

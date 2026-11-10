@@ -207,6 +207,16 @@ class Transaction
         return $stmt->fetchAll();
     }
 
+    public static function dailySeriesForPeriod(int $userId, string $from, string $to): array
+    {
+        $stmt = db()->prepare("SELECT TO_CHAR(occurred_on, 'YYYY-MM-DD') AS day, type, SUM(amount) AS total
+                                FROM transactions
+                                WHERE user_id = ? AND occurred_on BETWEEN ? AND ?
+                                GROUP BY day, type ORDER BY day ASC");
+        $stmt->execute([$userId, $from, $to]);
+        return $stmt->fetchAll();
+    }
+
     public static function byCategory(int $userId, string $type, string $from, string $to): array
     {
         $stmt = db()->prepare("SELECT c.name, c.color, SUM(t.amount) AS total
@@ -222,6 +232,21 @@ class Transaction
         }
         unset($row);
         return $rows;
+    }
+
+    public static function categorySummaryForPeriod(int $userId, string $from, string $to): array
+    {
+        $stmt = db()->prepare("SELECT COALESCE(c.name, 'Sans catégorie') AS name,
+                                      COALESCE(c.color, '#ff8a3d') AS color,
+                                      SUM(CASE WHEN t.type = 'income' THEN t.amount ELSE 0 END) AS income,
+                                      SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END) AS expense
+                               FROM transactions t
+                               LEFT JOIN categories c ON c.id = t.category_id AND c.user_id = t.user_id
+                               WHERE t.user_id = ? AND t.occurred_on BETWEEN ? AND ?
+                               GROUP BY c.id, c.name, c.color
+                               ORDER BY expense DESC, income DESC");
+        $stmt->execute([$userId, $from, $to]);
+        return $stmt->fetchAll();
     }
 
     public static function expenseRanking(int $userId, string $from, string $to): array

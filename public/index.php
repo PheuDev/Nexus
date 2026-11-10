@@ -67,7 +67,8 @@ $routes = [
     ],
 
     'analytics' => [
-        'GET' => fn() => (new AnalyticsController())->index(),
+        'GET'                  => fn() => (new AnalyticsController())->index(),
+        'GET:export'           => fn() => (new AnalyticsController())->exportPdf(),
     ],
 
     'budgets' => [

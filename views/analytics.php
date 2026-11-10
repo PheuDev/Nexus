@@ -27,6 +27,9 @@ function variationBadge(?float $v, bool $invertGood = false): string {
             <input class="form-control" type="date" id="period-to" name="to" value="<?= htmlspecialchars($periodTo) ?>" required>
         </div>
         <span class="text-xs text-faint"><?= htmlspecialchars($periodFrom) ?> – <?= htmlspecialchars($periodTo) ?></span>
+        <a class="btn btn-sm export-btn" href="index.php?page=analytics&amp;action=export&amp;from=<?= urlencode($periodFrom) ?>&amp;to=<?= urlencode($periodTo) ?>">
+            <?= th('analytics.export_pdf') ?>
+        </a>
     </div>
 </form>
 
@@ -79,7 +82,8 @@ function variationBadge(?float $v, bool $invertGood = false): string {
         <?php if (empty($expenseByCat)): ?>
             <div class="empty-state"><div class="empty-state-icon">📊</div><?= th('analytics.no_expense_cat') ?></div>
         <?php else: ?>
-            <div class="chart-wrap chart-wrap-lg"><canvas id="chart-cat"></canvas></div>
+            <div class="chart-wrap chart-wrap-lg"><canvas id="chart-cat" aria-label="<?= th('analytics.breakdown') ?>"></canvas></div>
+            <div id="chart-cat-legend" class="chart-category-legend" aria-label="<?= th('analytics.breakdown') ?>"></div>
         <?php endif; ?>
     </div>
 </div>
@@ -101,12 +105,26 @@ function variationBadge(?float $v, bool $invertGood = false): string {
         }));
     }
 
-    const MONTH_NAMES = <?= json_encode(t('months')) ?>;
     const raw    = <?= json_encode($series) ?>;
-    const months = [...new Set(raw.map(r=>r.ym))].sort();
-    const income  = months.map(m=>{ const r=raw.find(x=>x.ym===m&&x.type==='income');  return r?parseFloat(r.total):0; });
-    const expense = months.map(m=>{ const r=raw.find(x=>x.ym===m&&x.type==='expense'); return r?parseFloat(r.total):0; });
-    const labels  = months.map(m=>{ const[year,mo]=m.split('-'); return `${MONTH_NAMES[parseInt(mo,10)-1]??m} ${year}`; });
+    const dailyTotals = new Map();
+    raw.forEach(row => {
+        const values = dailyTotals.get(row.day) || { income: 0, expense: 0 };
+        values[row.type] = parseFloat(row.total);
+        dailyTotals.set(row.day, values);
+    });
+    const labels = [];
+    const income = [];
+    const expense = [];
+    const cursor = new Date('<?= htmlspecialchars($periodFrom) ?>T00:00:00');
+    const lastDay = new Date('<?= htmlspecialchars($periodTo) ?>T00:00:00');
+    while (cursor <= lastDay) {
+        const day = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+        const totals = dailyTotals.get(day) || { income: 0, expense: 0 };
+        labels.push(day);
+        income.push(totals.income);
+        expense.push(totals.expense);
+        cursor.setDate(cursor.getDate() + 1);
+    }
 
     const isDark  = document.documentElement.getAttribute('data-theme')!=='light';
     const tc      = isDark?'#aab9b1':'#708276';
@@ -116,12 +134,15 @@ function variationBadge(?float $v, bool $invertGood = false): string {
     const def     = { plugins:{ legend:{labels:{color:tc,font:{family:'Inter',size:12},boxWidth:12,padding:16}}, tooltip:{backgroundColor:tbg,borderColor:tooltip,borderWidth:1,titleColor:isDark?'#f3f7f4':'#15251d',bodyColor:tc,padding:12} }, scales:{ x:{ticks:{color:tc,font:{size:11}},grid:{color:gc}}, y:{ticks:{color:tc,font:{size:11}},grid:{color:gc}} } };
 
     new Chart(document.getElementById('chart-evo'),{
-        type:'bar',
+        type:'line',
         data:{ labels, datasets:[
-            {label:'<?= th('common.income') ?>',  data:income,  backgroundColor:'rgba(115,201,161,0.55)',borderColor:'rgba(115,201,161,0.8)',borderWidth:1,borderRadius:4},
-            {label:'<?= th('common.expense') ?>', data:expense, backgroundColor:'rgba(223,137,129,0.55)',borderColor:'rgba(223,137,129,0.8)',borderWidth:1,borderRadius:4},
+            {label:'<?= th('common.income') ?>',  data:income,  backgroundColor:'rgba(115,201,161,0.12)',borderColor:'#73c9a1',borderWidth:2,pointRadius:3,pointHoverRadius:5,tension:0.25,fill:true},
+            {label:'<?= th('common.expense') ?>', data:expense, backgroundColor:'rgba(223,137,129,0.1)',borderColor:'#df8981',borderWidth:2,pointRadius:3,pointHoverRadius:5,tension:0.25,fill:true},
         ]},
-        options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},...def},
+        options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},...def,
+            scales:{...def.scales,x:{...def.scales.x,ticks:{...def.scales.x.ticks,maxTicksLimit:8,callback:(value)=>{const date=new Date(labels[value]+'T00:00:00');return date.toLocaleDateString('<?= nexus_locale() ?>',{day:'2-digit',month:'short'});}}}},
+            plugins:{...def.plugins,tooltip:{...def.plugins.tooltip,callbacks:{title:items=>new Date(labels[items[0].dataIndex]+'T00:00:00').toLocaleDateString('<?= nexus_locale() ?>',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}}}
+        },
     });
 
     const cats=<?= json_encode($expenseByCat) ?>;
@@ -131,11 +152,27 @@ function variationBadge(?float $v, bool $invertGood = false): string {
             data:{labels:cats.map(c=>c.name),datasets:[{data:cats.map(c=>parseFloat(c.total)),backgroundColor:cats.map(c=>c.color||'#a783ff'),borderWidth:2,borderColor:isDark?'#111627':'#ffffff',hoverOffset:8}]},
             options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
                 plugins:{
-                    legend:{position:'bottom',labels:{color:tc,font:{family:'Inter',size:11},padding:14,boxWidth:10}},
+                    legend:{display:false},
                     tooltip:{backgroundColor:tbg,borderColor:tooltip,borderWidth:1,titleColor:isDark?'#f3f7f4':'#15251d',bodyColor:tc,padding:12,
                         callbacks:{label:ctx=>' '+ctx.label+' : '+ctx.parsed.toLocaleString('<?= nexus_locale() ?>')+' <?= $cur ?>'}},
                 }
             },
+        });
+        const categoryLegend = document.getElementById('chart-cat-legend');
+        cats.forEach(category => {
+            const item = document.createElement('div');
+            item.className = 'chart-category-item';
+            const marker = document.createElement('span');
+            marker.className = 'chart-category-marker';
+            marker.style.backgroundColor = category.color || '#a783ff';
+            const name = document.createElement('span');
+            name.className = 'chart-category-name';
+            name.textContent = category.name;
+            const amount = document.createElement('span');
+            amount.className = 'chart-category-amount';
+            amount.textContent = `${parseFloat(category.total).toLocaleString('<?= nexus_locale() ?>')} <?= $cur ?>`;
+            item.append(marker, name, amount);
+            categoryLegend.append(item);
         });
     }
 })();

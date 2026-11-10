@@ -43,10 +43,6 @@ $p   = $pagination;
             <label><?= th('finance.to') ?></label>
             <input type="date" name="to" class="form-control" value="<?= htmlspecialchars($filters['to']) ?>">
         </div>
-        <div class="form-group mb-0" style="flex:0;">
-            <label style="visibility:hidden;">Go</label>
-            <button type="submit" class="btn btn-sm"><?= th('finance.filter_btn') ?></button>
-        </div>
     </form>
 </div>
 
@@ -249,30 +245,38 @@ $p   = $pagination;
         </div>
         <div>
             <div class="section-title" style="margin-bottom:12px;"><?= th('finance.cat_list_title') ?></div>
-            <div id="cat-list" style="display:flex;flex-direction:column;gap:6px;">
+            <input id="category-list-search" type="search" class="form-control category-list-search" placeholder="<?= th('finance.cat_search') ?>" aria-label="<?= th('finance.cat_search') ?>">
+            <div id="cat-list" class="category-list">
+                <div id="category-search-empty" class="empty-state" style="padding:12px 0;" hidden><?= th('finance.cat_search_empty') ?></div>
                 <?php if (empty($categories)): ?>
                     <div class="empty-state" style="padding:20px 0;"><?= th('finance.cat_none') ?></div>
                 <?php endif; ?>
-                <?php foreach ($categories as $c): ?>
-                <div class="list-row" data-cat-id="<?= $c['id'] ?>">
-                    <div class="list-row-main">
-                        <span class="tag-dot" style="background:<?= htmlspecialchars($c['color'] ?? '#5b8cff') ?>;width:10px;height:10px;"></span>
-                        <span style="font-size:13px;font-weight:500;"><?= htmlspecialchars($c['name']) ?></span>
-                        <span class="badge <?= $c['type']==='income' ? 'badge-active' : '' ?>"
-                              style="<?= $c['type']!=='income' ? 'color:var(--danger);background:var(--danger-dim);':'' ?>;font-size:9px;">
-                            <?= $c['type']==='income' ? th('finance.income') : th('finance.expense') ?>
-                        </span>
+                <?php foreach (['expense' => th('finance.expense'), 'income' => th('finance.income')] as $categoryType => $categoryTypeLabel):
+                    $typedCategories = array_filter($categories, static function ($category) use ($categoryType) {
+                        return $category['type'] === $categoryType;
+                    });
+                ?>
+                <?php if ($typedCategories): ?>
+                <section class="category-list-group" data-category-group>
+                    <div class="category-list-group-title"><span><?= $categoryTypeLabel ?></span><span><?= count($typedCategories) ?></span></div>
+                    <?php foreach ($typedCategories as $c): ?>
+                    <div class="list-row category-entry" data-cat-id="<?= $c['id'] ?>" data-category-name="<?= htmlspecialchars(mb_strtolower($c['name'], 'UTF-8')) ?>">
+                        <div class="list-row-main">
+                            <span class="tag-dot" style="background:<?= htmlspecialchars($c['color'] ?? '#5b8cff') ?>;width:10px;height:10px;flex-shrink:0;"></span>
+                            <span class="category-entry-name"><?= htmlspecialchars($c['name']) ?></span>
+                        </div>
+                        <div class="category-entry-actions">
+                            <button class="btn btn-icon btn-sm" onclick='editCat(<?= htmlspecialchars(json_encode($c), ENT_QUOTES, 'UTF-8') ?>)' title="<?= th('finance.edit') ?>">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </button>
+                            <button class="btn btn-icon btn-sm btn-danger" onclick="deleteCat(<?= $c['id'] ?>, <?= htmlspecialchars(json_encode($c['name']), ENT_QUOTES, 'UTF-8') ?>)" title="<?= th('finance.delete') ?>">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>
+                            </button>
+                        </div>
                     </div>
-                    <div style="display:flex;gap:4px;">
-                        <button class="btn btn-icon btn-sm" onclick='editCat(<?= json_encode($c) ?>)' title="<?= th('finance.edit') ?>">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        </button>
-                        <button class="btn btn-icon btn-sm btn-danger" onclick="deleteCat(<?= $c['id'] ?>, '<?= htmlspecialchars(addslashes($c['name'])) ?>')" title="<?= th('finance.delete') ?>">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M9 6V4h6v2"/></svg>
-                        </button>
-                    </div>
-                </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </section>
+                <?php endif; endforeach; ?>
             </div>
         </div>
     </div>
@@ -343,6 +347,24 @@ document.getElementById('filter-form').addEventListener('submit',(e)=>{
     const params=new URLSearchParams(new FormData(e.target));
     window.location.href='index.php?page=finances&'+params.toString();
 });
+const financeFilters = document.getElementById('filter-form');
+const filterDates = ['from', 'to'].map(name => financeFilters.elements.namedItem(name));
+const syncFinanceDateBounds = () => {
+    filterDates[0].max = filterDates[1].value;
+    filterDates[1].min = filterDates[0].value;
+};
+const applyFinanceFilters = () => {
+    syncFinanceDateBounds();
+    if (financeFilters.reportValidity()) financeFilters.requestSubmit();
+};
+syncFinanceDateBounds();
+financeFilters.querySelectorAll('select').forEach(input => input.addEventListener('change', applyFinanceFilters));
+filterDates.forEach(input => input.addEventListener('change', applyFinanceFilters));
+let financeSearchTimer;
+financeFilters.elements.namedItem('q').addEventListener('input', () => {
+    window.clearTimeout(financeSearchTimer);
+    financeSearchTimer = window.setTimeout(applyFinanceFilters, 400);
+});
 
 // Catégories
 function openCatPanel(){ document.getElementById('cat-panel-backdrop').style.display='flex'; }
@@ -384,9 +406,31 @@ async function deleteCat(id,name){
     const ok=await NEXUS.confirm(msg,'','🗑',true);
     if(!ok) return;
     const res=await NEXUS.post('index.php?page=finances&action=destroy_category',{id});
-    if(res.success){ document.querySelector(`[data-cat-id="${id}"]`)?.remove(); NEXUS.toast(_t.catDeleted,'success'); }
+    if(res.success){
+        document.querySelector(`[data-cat-id="${id}"]`)?.remove();
+        document.querySelectorAll('[data-category-group]').forEach(group => {
+            const count = group.querySelectorAll('[data-cat-id]').length;
+            group.querySelector('.category-list-group-title span:last-child').textContent = count;
+        });
+        filterCategoryList();
+        NEXUS.toast(_t.catDeleted,'success');
+    }
     else NEXUS.toast(res.error||_t.error,'error');
 }
+function filterCategoryList() {
+    const query = document.getElementById('category-list-search').value.trim().toLocaleLowerCase();
+    document.querySelectorAll('.category-entry').forEach(entry => {
+        entry.hidden = !entry.dataset.categoryName.includes(query);
+    });
+    let hasVisibleCategory = false;
+    document.querySelectorAll('[data-category-group]').forEach(group => {
+        const hasVisibleEntry = !!group.querySelector('.category-entry:not([hidden])');
+        group.hidden = !hasVisibleEntry;
+        hasVisibleCategory = hasVisibleCategory || hasVisibleEntry;
+    });
+    document.getElementById('category-search-empty').hidden = !query || hasVisibleCategory;
+}
+document.getElementById('category-list-search').addEventListener('input', filterCategoryList);
 
 <?php if (!empty($quickType)): ?>
 openTxForm();
